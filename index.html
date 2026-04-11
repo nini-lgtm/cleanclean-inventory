@@ -68,7 +68,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .bulletin-header .bh-title{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;color:var(--green-deep);letter-spacing:.04em;}
 .bulletin-toggle{background:none;border:none;color:var(--mint);font-size:.75rem;cursor:pointer;font-family:inherit;font-weight:500;padding:2px 8px;border-radius:8px;transition:background .15s;}
 .bulletin-toggle:hover{background:var(--mint-light);}
-.bulletin-list{list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mint-mid) transparent;}
+.bulletin-list{list-style:none;padding:0;margin:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mint-mid) transparent;}
+#bulletinListSystem{max-height:108px;}
+#bulletinListImportant{max-height:none;}
 .bulletin-list::-webkit-scrollbar{width:4px;}
 .bulletin-list::-webkit-scrollbar-thumb{background:var(--mint-mid);border-radius:4px;}
 .bulletin-list li{padding:8px 0;border-bottom:1px solid #f0f4f5;font-size:.82rem;color:var(--text);display:flex;gap:12px;align-items:baseline;}
@@ -1303,7 +1305,7 @@ function toggleBulletin(){
     list.style.maxHeight = 'none';
     btn.textContent = '收起 ▴';
   } else {
-    list.style.maxHeight = '140px';
+    list.style.maxHeight = '108px';
     list.scrollTop = 0;
     btn.textContent = '展開全部 ▾';
   }

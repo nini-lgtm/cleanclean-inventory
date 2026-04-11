@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>淨淨 庫存查詢系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --mint:#5BC8D8;--mint-light:#E8F7FA;--mint-mid:#B8E8EF;
+  --green-dark:#2BA8BD;--green-deep:#1A8597;
+  --navy:#1A8597;--navy-2:#2BA8BD;--sky:#B8E8EF;--accent:#5BC8D8;
+  --text:#1F2937;--text-mid:#6B7280;--text-light:#9CA3AF;
+  --bg:#F5FBFC;--card:#FFFFFF;--border:#DCEEF1;
+  --shadow:0 6px 20px rgba(91,200,216,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* HOME */
+#homeScreen{min-height:100vh;background:#F5FBFC;display:none;flex-direction:column;align-items:center;padding:0 24px 40px;}
+#homeScreen.active{display:flex;}
+.home-hero{width:100%;background:linear-gradient(160deg,#1A8597 0%,#2BA8BD 38%,#5BC8D8 75%,#A6E3EC 100%);padding:18px 24px 14px;display:flex;flex-direction:column;align-items:center;border-radius:0 0 24px 24px;margin-bottom:22px;}
+.home-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+.home-logo{display:flex;align-items:center;justify-content:center;}
+.home-logo img{width:48px;height:auto;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.15));}
+.home-brand-group{display:flex;flex-direction:column;}
+.home-brand{font-size:1.5rem;font-weight:700;color:white;letter-spacing:.06em;line-height:1.2;}
+.home-sub{font-size:.65rem;color:rgba(255,255,255,.7);font-weight:400;letter-spacing:.22em;}
+.home-title{font-size:.82rem;color:rgba(255,255,255,.7);font-weight:400;margin-bottom:6px;}
+.home-date{font-size:.7rem;color:rgba(255,255,255,.5);background:rgba(255,255,255,.12);padding:4px 14px;border-radius:16px;margin-bottom:0;}
+
+/* HOME SUMMARY STATS */
+.home-stats{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;width:100%;max-width:680px;}
+.home-stat{background:white;border:1.5px solid var(--border);border-radius:16px;padding:14px 20px;text-align:center;min-width:130px;flex:1;cursor:pointer;transition:all .2s;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.home-stat:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.home-stat .hs-num{font-size:1.8rem;font-weight:700;color:var(--green-deep);display:block;line-height:1.2;}
+.home-stat .hs-label{font-size:.72rem;color:var(--text-mid);margin-top:4px;display:block;}
+.home-stat.hs-urgent{border-color:#fecaca;background:#FFF5F5;}
+.home-stat.hs-urgent .hs-num{color:#DC2626;}
+.home-stat.hs-warn{border-color:#fde68a;background:#FFFBEB;}
+.home-stat.hs-warn .hs-num{color:#D97706;}
+
+/* HOME SEARCH */
+.home-search{width:100%;max-width:480px;margin-bottom:30px;position:relative;}
+.home-search input{width:100%;padding:12px 20px 12px 44px;border:1.5px solid var(--border);border-radius:28px;background:white;color:var(--text);font-size:.92rem;font-family:inherit;outline:none;transition:all .2s;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.home-search input::placeholder{color:var(--text-light);}
+.home-search input:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(91,200,216,.15);}
+.home-search .search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none;}
+.home-search-results{position:absolute;top:100%;left:0;right:0;margin-top:6px;background:white;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:320px;overflow-y:auto;display:none;z-index:200;}
+.home-search-results.active{display:block;}
+.search-item{padding:12px 18px;cursor:pointer;border-bottom:1px solid #f0f0f0;transition:background .12s;}
+.search-item:hover{background:#f0fafb;}
+.search-item:last-child{border-bottom:none;}
+.search-item .si-name{font-size:.88rem;font-weight:600;color:#1F2937;}
+.search-item .si-meta{font-size:.72rem;color:#6B7280;margin-top:2px;}
+.search-item .si-stock{float:right;font-weight:700;color:var(--green-deep);font-size:.95rem;}
+
+/* HOME BULLETIN */
+.home-bulletin{width:100%;max-width:680px;margin-bottom:24px;background:white;border:1.5px solid var(--border);border-radius:18px;padding:16px 20px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.bulletin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.bulletin-header .bh-title{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;color:var(--green-deep);letter-spacing:.04em;}
+.bulletin-toggle{background:none;border:none;color:var(--mint);font-size:.75rem;cursor:pointer;font-family:inherit;font-weight:500;padding:2px 8px;border-radius:8px;transition:background .15s;}
+.bulletin-toggle:hover{background:var(--mint-light);}
+.bulletin-list{list-style:none;padding:0;margin:0;max-height:140px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mint-mid) transparent;}
+.bulletin-list::-webkit-scrollbar{width:4px;}
+.bulletin-list::-webkit-scrollbar-thumb{background:var(--mint-mid);border-radius:4px;}
+.bulletin-list li{padding:8px 0;border-bottom:1px solid #f0f4f5;font-size:.82rem;color:var(--text);display:flex;gap:12px;align-items:baseline;}
+.bulletin-list .bl-date{font-size:.65rem;color:white;background:var(--mint);padding:2px 8px;border-radius:8px;white-space:nowrap;min-width:72px;text-align:center;font-weight:500;}
+.bulletin-list .bl-pin{font-size:.68rem;color:white;background:#F59E0B;padding:2px 8px;border-radius:8px;white-space:nowrap;min-width:48px;text-align:center;font-weight:500;}
+
+.cards-wrap{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;width:100%;max-width:680px;}
+.role-card{flex:1;min-width:255px;max-width:310px;background:white;border:1.5px solid var(--border);border-radius:24px;padding:34px 26px 30px;cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.25,.8,.25,1);box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.role-card:hover{border-color:var(--mint);transform:translateY(-6px);box-shadow:0 12px 32px rgba(91,200,216,.18);}
+.role-card .icon{font-size:2.6rem;margin-bottom:14px;display:block;}
+.role-card h2{color:var(--green-deep);font-size:1.3rem;font-weight:700;margin-bottom:8px;letter-spacing:.04em;}
+.role-card p{color:var(--text-mid);font-size:.8rem;line-height:1.8;font-weight:300;}
+.role-card .enter-btn{margin-top:20px;display:inline-block;padding:8px 26px;border-radius:20px;font-size:.8rem;font-weight:600;letter-spacing:.06em;color:white;background:linear-gradient(135deg,var(--green-deep),var(--mint));transition:all .15s;}
+.role-card:hover .enter-btn{box-shadow:0 4px 12px rgba(91,200,216,.35);}
+.home-footer{margin-top:36px;color:var(--text-light);font-size:.7rem;letter-spacing:.08em;}
+
+/* TOPBAR */
+.topbar{background:linear-gradient(90deg,var(--navy),var(--navy-2),var(--accent));padding:13px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 3px 14px rgba(30,39,97,.2);}
+.back-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:white;border-radius:10px;padding:6px 13px;font-size:.76rem;font-family:inherit;cursor:pointer;font-weight:500;transition:background .15s;white-space:nowrap;}
+.back-btn:hover{background:rgba(255,255,255,.28);}
+.topbar-title{color:white;font-size:1.05rem;font-weight:700;flex:1;}
+.topbar-badge{font-size:.7rem;color:rgba(255,255,255,.8);background:rgba(255,255,255,.18);padding:4px 12px;border-radius:14px;white-space:nowrap;}
+.dl-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:white;border-radius:10px;padding:5px 12px;font-size:.72rem;font-family:inherit;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+.dl-btn:hover{background:rgba(255,255,255,.35);}
+
+/* STATS */
+.stats-bar{display:flex;gap:9px;flex-wrap:wrap;padding:14px 24px 0;}
+.stat-chip{background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:7px 15px;font-size:.76rem;display:flex;align-items:center;gap:6px;box-shadow:0 1px 6px rgba(46,196,182,.07);transition:all .18s;}
+.stat-chip b{font-size:.95rem;color:var(--green-dark);}
+/* Clickable alert chips */
+.stat-chip.clickable{cursor:pointer;}
+.stat-chip.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.10);}
+.stat-chip.chip-urgent{border-color:#fecaca;}
+.stat-chip.chip-urgent b{color:#dc2626;}
+.stat-chip.chip-urgent:hover{background:#fef2f2;}
+.stat-chip.chip-urgent.chip-active{background:#fef2f2;border-color:#dc2626;}
+.stat-chip.chip-warn{border-color:#fde68a;}
+.stat-chip.chip-warn b{color:#b45309;}
+.stat-chip.chip-warn:hover{background:#fffbeb;}
+.stat-chip.chip-warn.chip-active{background:#fffbeb;border-color:#f59e0b;}
+
+/* FILTER BANNER */
+.filter-banner{display:none;margin:10px 24px 0;padding:10px 16px;border-radius:12px;font-size:.8rem;font-weight:500;align-items:center;gap:10px;}
+.filter-banner.active{display:flex;}
+.filter-banner.banner-urgent{background:#fef2f2;border:1.5px solid #fecaca;color:#dc2626;}
+.filter-banner.banner-warn{background:#fffbeb;border:1.5px solid #fde68a;color:#b45309;}
+.filter-banner span{flex:1;}
+.clear-filter-btn{padding:3px 10px;border-radius:8px;border:none;cursor:pointer;font-size:.73rem;font-family:inherit;font-weight:600;}
+.banner-urgent .clear-filter-btn{background:#dc2626;color:white;}
+.banner-warn   .clear-filter-btn{background:#f59e0b;color:white;}
+
+/* CONTROLS */
+.controls{padding:12px 24px 0;}
+.search-wrap{position:relative;margin-bottom:9px;}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.38;font-size:.9rem;}
+.search-input{width:100%;padding:10px 14px 10px 38px;border:2px solid var(--border);border-radius:12px;font-size:.88rem;font-family:inherit;background:var(--card);color:var(--text);outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--mint);}
+.search-input::placeholder{color:var(--text-light);}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:7px;}
+.filter-label{font-size:.73rem;color:var(--text-mid);font-weight:600;white-space:nowrap;}
+.cat-btn{padding:4px 12px;border-radius:18px;border:1.5px solid var(--border);background:var(--card);color:var(--text-mid);font-size:.73rem;font-family:inherit;cursor:pointer;transition:all .15s;font-weight:500;}
+.cat-btn:hover{border-color:var(--mint);color:var(--mint);}
+.cat-btn.active{background:var(--mint);border-color:var(--mint);color:white;}
+.toggle-row{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:11px;}
+.toggle-btn{padding:4px 12px;border-radius:14px;border:1.5px solid var(--border);background:var(--card);color:var(--text-mid);font-size:.71rem;font-family:inherit;cursor:pointer;transition:all .15s;}
+.toggle-btn.active{background:var(--green-dark);border-color:var(--green-dark);color:white;}
+.toggle-btn:hover:not(.active){border-color:var(--green-dark);color:var(--green-dark);}
+.result-count{padding:0 24px 8px;font-size:.75rem;color:var(--text-mid);}
+
+/* TABLE */
+.table-wrap{padding:0 24px 40px;}
+.table-scroll{border-radius:14px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);overflow-x:auto;}
+table{width:100%;border-collapse:collapse;background:var(--card);font-size:.85rem;}
+thead th{background:linear-gradient(90deg,var(--navy),var(--navy-2));color:white;padding:12px 14px;font-weight:600;text-align:left;font-size:.76rem;white-space:nowrap;cursor:pointer;user-select:none;letter-spacing:.04em;}
+thead th:hover{opacity:.88;}
+thead th .sa{margin-left:3px;opacity:.55;}
+tbody tr{border-bottom:1px solid #f0fafa;transition:background .1s;}
+tbody tr:hover{background:var(--mint-light);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:10px 14px;vertical-align:top;}
+.cat-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.67rem;font-weight:600;background:var(--mint-light);color:var(--green-dark);border:1px solid var(--mint-mid);white-space:nowrap;}
+.barcode-cell{font-family:'Courier New',monospace;font-size:.76rem;color:var(--text-mid);}
+.stock-cell{text-align:right;}
+.stock-num{font-weight:700;font-size:.92rem;}
+.stock-zero{color:#cbd5e1;}.stock-low{color:#f59e0b;}.stock-ok{color:var(--green-dark);}
+.name-cell{font-weight:500;}
+
+/* Manager batches */
+.batch-list{display:flex;flex-direction:column;gap:4px;}
+.batch-row{display:flex;align-items:center;gap:5px;}
+.batch-date{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.71rem;font-weight:500;white-space:nowrap;font-family:'Courier New',monospace;}
+.batch-qty{font-size:.71rem;color:var(--text-mid);}
+.batch-loc{font-size:.63rem;color:var(--text-light);}
+
+/* Expiry colours */
+.exp-urgent{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.exp-warn  {background:#fffbeb;color:#b45309;border:1px solid #fde68a;}
+.exp-ok    {background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
+.exp-none  {background:#f8fafc;color:#94a3b8;border:1px solid #e2e8f0;}
+.exp-simple{display:inline-block;padding:3px 11px;border-radius:8px;font-size:.74rem;font-weight:500;white-space:nowrap;}
+
+/* Highlight rows */
+tbody tr.row-urgent{background:#fff8f8;}
+tbody tr.row-warn{background:#fffdf0;}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;padding:0 24px 13px;font-size:.71rem;color:var(--text-mid);align-items:center;}
+.legend-item{display:flex;align-items:center;gap:4px;}
+.ldot{width:8px;height:8px;border-radius:50%;}
+.leg-r{background:#dc2626;}.leg-y{background:#f59e0b;}.leg-g{background:#22c55e;}
+.no-results{text-align:center;padding:56px 20px;color:var(--text-mid);font-size:.9rem;}
+
+@media(max-width:580px){
+  .cards-wrap{flex-direction:column;}
+  .home-stats{gap:8px;}
+  .home-stat{min-width:90px;padding:10px 12px;}
+  .home-stat .hs-num{font-size:1.4rem;}
+  .role-card{min-width:unset;max-width:100%;}
+  .topbar,.controls,.stats-bar,.table-wrap,.result-count,.legend,.filter-banner{padding-left:16px;padding-right:16px;}
+}
+
+/* PASSWORD MODAL */
+.pw-overlay{position:fixed;inset:0;background:rgba(10,40,36,.72);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.pw-overlay.active{display:flex;}
+.pw-box{background:white;border-radius:20px;padding:36px 32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;}
+.pw-icon{font-size:2.4rem;margin-bottom:10px;}
+.pw-title{font-size:1.15rem;font-weight:700;color:var(--green-deep);margin-bottom:4px;}
+.pw-sub{font-size:.8rem;color:var(--text-mid);margin-bottom:22px;}
+.pw-input-wrap{position:relative;margin-bottom:14px;}
+.pw-input{width:100%;padding:11px 42px 11px 16px;border:2px solid var(--border);border-radius:12px;font-size:.95rem;font-family:inherit;color:var(--text);outline:none;transition:border-color .2s;text-align:center;letter-spacing:.12em;}
+.pw-input:focus{border-color:var(--mint);}
+.pw-input.error{border-color:#dc2626;animation:shake .3s ease;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;opacity:.45;padding:0;}
+.pw-err{font-size:.78rem;color:#dc2626;margin-bottom:12px;min-height:18px;}
+.pw-submit{width:100%;padding:11px;background:linear-gradient(90deg,var(--navy),var(--accent));color:white;border:none;border-radius:12px;font-size:.9rem;font-family:inherit;font-weight:600;cursor:pointer;letter-spacing:.04em;transition:opacity .15s;}
+.pw-submit:hover{opacity:.9;}
+.pw-cancel{margin-top:11px;display:block;font-size:.76rem;color:var(--text-light);cursor:pointer;background:none;border:none;font-family:inherit;}
+.pw-cancel:hover{color:var(--text-mid);}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD MODAL -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-icon">🔐</div>
+    <div class="pw-title">營運部專屬</div>
+    <div class="pw-sub">請輸入密碼以進入完整版</div>
+    <div class="pw-input-wrap">
+      <input class="pw-input" id="pwInput" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPw()">
+      <button class="pw-toggle" onclick="togglePwVis()" id="pwToggle">👁</button>
+    </div>
+    <div class="pw-err" id="pwErr"></div>
+    <button class="pw-submit" onclick="checkPw()">確認進入</button>
+    <button class="pw-cancel" onclick="closePwModal()">取消</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="homeScreen" class="screen active">
+  <div class="home-hero">
+  <div class="home-logo-row">
+  <div class="home-logo"><img src="data:image/png;base64,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" alt="淨淨 Logo"></div>
+  <div class="home-brand-group">
+    <div class="home-brand">淨淨</div>
+    <div class="home-sub">Clean Clean</div>
+  </div>
+  </div>
+  <div class="home-title">庫存查詢系統</div>
+  <div class="home-date">📦 資料更新：2026 / 04 / 10</div>
+  </div>
+
+  <!-- 快速庫存摘要 -->
+  <div class="home-stats" id="homeStats"></div>
+
+  <!-- 全站搜尋框 -->
+  <div class="home-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="homeSearchInput" placeholder="搜尋品名或條碼..." oninput="homeSearch(this.value)" onfocus="homeSearch(this.value)" autocomplete="off">
+    <div class="home-search-results" id="homeSearchResults"></div>
+  </div>
+
+  <!-- 公告欄 -->
+  <div class="home-bulletin" id="homeBulletin">
+    <div class="bulletin-header">
+      <span class="bh-title">📢 最新公告</span>
+      <button class="bulletin-toggle" id="bulletinToggle" onclick="toggleBulletin()">查看更多 ▾</button>
+    </div>
+    <ul class="bulletin-list" id="bulletinList">
+      <li><span class="bl-date">2026/04/11</span>新功能：各檢視頁面可篩選後下載 Excel，點擊「⬇ 下載 Excel」即可匯出</li>
+      <li><span class="bl-date">2026/04/10</span>首頁改版：新增搜尋功能、庫存摘要、到期與低庫存快速篩選</li>
+      <li><span class="bl-date">2026/04/09</span>儀表板正式上線，歡迎各部門使用</li>
+    </ul>
+  </div>
+
+  <div class="cards-wrap">
+    <div class="role-card" onclick="enterView('manager')">
+      <span class="icon">📊</span>
+      <h2>營運部</h2>
+      <p>完整庫存資訊<br>含條碼・各倉批次<br>效期數量完整明細</p>
+      <span class="enter-btn">進入 →</span>
+    </div>
+    <div class="role-card" onclick="enterView('staff')">
+      <span class="icon">👥</span>
+      <h2>同仁簡易版</h2>
+      <p>快速查詢品名庫存<br>效期顏色警示<br>簡潔清晰易讀</p>
+      <span class="enter-btn">進入 →</span>
+    </div>
+    <div class="role-card" onclick="enterView('store')">
+      <span class="icon">🏬</span>
+      <h2>百貨店面</h2>
+      <p>竹南門市・台中lalaport<br>台南南紡・林口三井<br>四店庫存一覽</p>
+      <span class="enter-btn">進入 →</span>
+    </div>
+    <div class="role-card" onclick="enterView('vendor')">
+      <span class="icon">📦</span>
+      <h2>業務</h2>
+      <p>提供廠商的商品<br>外包出貨效期清單<br>與警示提醒</p>
+      <span class="enter-btn">進入 →</span>
+    </div>
+  </div>
+  <div class="home-footer">淨淨 × 2026 · 內部使用</div>
+</div>
+
+<!-- MANAGER -->
+<div id="managerScreen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← 返回首頁</button>
+    <span class="topbar-title">📊 營運部</span>
+    <button class="dl-btn" onclick="downloadExcel('m')">⬇ 下載 Excel</button>
+    <span class="topbar-badge">2026/04/10 更新</span>
+  </div>
+  <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:10px 16px;margin:10px 24px 0;font-size:.82rem;color:#5D4037;display:flex;align-items:center;gap:8px;">
+    <span style="font-size:1.1rem;">📌</span>
+    <span><strong>每日 17:00 前</strong>請將 BJ 及 OMS 兩份原始檔放到雲端「庫存表」資料夾，17:30 系統自動更新</span>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-chip"><span>📦 總品項</span><b id="m-total">-</b></div>
+    <div class="stat-chip"><span>✅ 有庫存</span><b id="m-stock">-</b></div>
+    <div class="stat-chip chip-urgent clickable" id="m-chip-urgent" onclick="toggleExpFilter('m','urgent')">
+      <span>🔴 6個月內到期</span><b id="m-urgent">-</b><span style="font-size:.68rem;opacity:.7">▼ 點選查看</span>
+    </div>
+    <div class="stat-chip chip-warn clickable" id="m-chip-warn" onclick="toggleExpFilter('m','warn')">
+      <span>🟡 6–12個月到期</span><b id="m-warn">-</b><span style="font-size:.68rem;opacity:.7">▼ 點選查看</span>
+    </div>
+  </div>
+  <div class="filter-banner banner-urgent" id="m-banner-urgent">
+    <span>🔴 目前顯示：6個月內即將到期品項</span>
+    <button class="clear-filter-btn" onclick="clearExpFilter('m')">✕ 清除篩選</button>
+  </div>
+  <div class="filter-banner banner-warn" id="m-banner-warn">
+    <span>🟡 目前顯示：6–12個月到期品項</span>
+    <button class="clear-filter-btn" onclick="clearExpFilter('m')">✕ 清除篩選</button>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="m-search" placeholder="搜尋商品名稱、條碼…" oninput="render('m')">
+    </div>
+    <div class="filter-row" id="m-grouprow">
+      <span class="filter-label">品牌：</span>
+      <button class="cat-btn active" data-group="" onclick="selectGroup('m','')">全部</button>
+      <button class="cat-btn" data-group="jj" onclick="selectGroup('m','jj')">淨淨</button>
+      <button class="cat-btn" data-group="oem" onclick="selectGroup('m','oem')">OEM</button>
+    </div>
+    <div class="filter-row" id="m-catrow">
+      <span class="filter-label">分類：</span>
+      <button class="cat-btn active" data-cat="" onclick="selectCat('m','')">全部</button>
+    </div>
+    <div class="filter-row" id="m-locrow">
+      <span class="filter-label">倉別：</span>
+      <select id="m-loc" onchange="selectLoc(this.value)" style="padding:5px 12px;border-radius:14px;border:1.5px solid var(--border);background:var(--card);color:var(--text-mid);font-size:.73rem;font-family:inherit;cursor:pointer;outline:none;">
+        <option value="">全部倉別</option>
+      </select>
+    </div>
+
+  </div>
+  <div class="legend">
+    <span style="font-weight:600;color:#374151;">效期：</span>
+    <span class="legend-item"><span class="ldot leg-r"></span>6個月內到期</span>
+    <span class="legend-item"><span class="ldot leg-y"></span>6–12個月到期</span>
+    <span class="legend-item"><span class="ldot leg-g"></span>12個月以上</span>
+  </div>
+  <div class="result-count" id="m-count"></div>
+  <div class="filter-row" id="m-pickrow" style="display:none;background:linear-gradient(135deg,#E0F2FE 0%,#DBEAFE 100%);border-radius:14px;padding:8px 14px;margin:0 0 8px 0;align-items:center;gap:10px;">
+    <span style="color:#1E40AF;font-weight:700;font-size:.85rem;">✓ 已勾選：</span>
+    <span id="m-pickcount" style="font-size:.78rem;color:#1E3A8A;font-weight:700;">0 項</span>
+    <button id="m-pickonlybtn" onclick="togglePickOnly('m')" style="margin-left:12px;padding:4px 12px;border-radius:10px;border:1.5px solid #1E40AF;background:#fff;color:#1E40AF;font-size:.72rem;cursor:pointer;font-weight:700;">👁 只看已勾選</button>
+    <button onclick="clearPicks('m')" style="margin-left:auto;padding:4px 12px;border-radius:10px;border:1.5px solid #DC2626;background:#fff;color:#DC2626;font-size:.72rem;cursor:pointer;font-weight:700;">✕ 清除勾選</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th style="width:36px;text-align:center;"><input type="checkbox" id="m-pickall" onclick="togglePickAll('m')" title="勾選全部"></th>
+          <th onclick="sortBy('m','category')">分類 <span class="sa">↕</span></th>
+          <th onclick="sortBy('m','barcode')">條碼 <span class="sa">↕</span></th>
+          <th onclick="sortBy('m','name')">商品名稱 <span class="sa">↕</span></th>
+          <th onclick="sortBy('m','stock')" style="text-align:right">總庫存 <span class="sa">↕</span></th>
+          <th>效期 × 數量（含倉別）</th>
+        </tr></thead>
+        <tbody id="m-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="padding:24px 24px 8px;display:flex;align-items:center;gap:10px;">
+    <span style="display:inline-block;width:5px;height:18px;background:#dc2626;border-radius:2px;"></span>
+    <h3 style="font-size:1rem;font-weight:700;color:#dc2626;margin:0;">不良品倉</h3>
+    <span id="m-defect-count" style="font-size:.74rem;color:var(--text-mid);"></span>
+  </div>
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th>分類</th>
+          <th>條碼</th>
+          <th>商品名稱</th>
+          <th style="text-align:right">不良品數量</th>
+          <th>倉別明細</th>
+        </tr></thead>
+        <tbody id="m-defect-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF -->
+<div id="staffScreen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← 返回首頁</button>
+    <span class="topbar-title">👥 同仁簡易版</span>
+    <button class="dl-btn" onclick="downloadExcel('s')">⬇ 下載 Excel</button>
+    <span class="topbar-badge">2026/04/10 更新</span>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-chip"><span>✅ 有庫存品項</span><b id="s-stock">-</b></div>
+    <div class="stat-chip chip-urgent clickable" id="s-chip-urgent" onclick="toggleExpFilter('s','urgent')">
+      <span>🔴 6個月內到期</span><b id="s-urgent">-</b><span style="font-size:.68rem;opacity:.7">▼ 點選查看</span>
+    </div>
+    <div class="stat-chip chip-warn clickable" id="s-chip-warn" onclick="toggleExpFilter('s','warn')">
+      <span>🟡 6–12個月到期</span><b id="s-warn">-</b><span style="font-size:.68rem;opacity:.7">▼ 點選查看</span>
+    </div>
+  </div>
+  <div class="notice-board" style="margin:16px 24px 0;padding:14px 18px;background:linear-gradient(135deg,#FFF8E1 0%,#FFF3C4 100%);border-left:4px solid #F59E0B;border-radius:10px;display:flex;align-items:flex-start;gap:12px;box-shadow:0 2px 8px rgba(245,158,11,.12);">
+    <span style="font-size:1.4rem;line-height:1;">📢</span>
+    <div style="flex:1;font-size:.88rem;line-height:1.6;color:#78350F;">
+      <div style="font-weight:700;margin-bottom:4px;color:#92400E;">公告</div>
+      本庫存為<strong>所有通路共用</strong>，如需申請<strong>公關贈品 / 贊助 / 活動用品</strong>等，請<strong>務必先與營運部確認數量是否可支援</strong>，再進行後續安排唷～感謝大家配合 🙏
+    </div>
+  </div>
+  <div class="filter-banner banner-urgent" id="s-banner-urgent">
+    <span>🔴 目前顯示：6個月內即將到期品項</span>
+    <button class="clear-filter-btn" onclick="clearExpFilter('s')">✕ 清除篩選</button>
+  </div>
+  <div class="filter-banner banner-warn" id="s-banner-warn">
+    <span>🟡 目前顯示：6–12個月到期品項</span>
+    <button class="clear-filter-btn" onclick="clearExpFilter('s')">✕ 清除篩選</button>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="s-search" placeholder="搜尋商品名稱、條碼…" oninput="render('s')">
+    </div>
+    <div class="filter-row" id="s-catrow">
+      <span class="filter-label">分類：</span>
+      <button class="cat-btn active" data-cat="" onclick="selectCat('s','')">全部</button>
+    </div>
+
+  </div>
+  <div class="legend">
+    <span style="font-weight:600;color:#374151;">效期：</span>
+    <span class="legend-item"><span class="ldot leg-r"></span>6個月內（急）</span>
+    <span class="legend-item"><span class="ldot leg-y"></span>6–12個月（注意）</span>
+    <span class="legend-item"><span class="ldot leg-g"></span>12個月以上（安全）</span>
+  </div>
+  <div class="result-count" id="s-count"></div>
+  <div class="filter-row" id="s-pickrow" style="display:none;background:linear-gradient(135deg,#E0F2FE 0%,#DBEAFE 100%);border-radius:14px;padding:8px 14px;margin:0 0 8px 0;align-items:center;gap:10px;">
+    <span style="color:#1E40AF;font-weight:700;font-size:.85rem;">✓ 已勾選：</span>
+    <span id="s-pickcount" style="font-size:.78rem;color:#1E3A8A;font-weight:700;">0 項</span>
+    <button id="s-pickonlybtn" onclick="togglePickOnly('s')" style="margin-left:12px;padding:4px 12px;border-radius:10px;border:1.5px solid #1E40AF;background:#fff;color:#1E40AF;font-size:.72rem;cursor:pointer;font-weight:700;">👁 只看已勾選</button>
+    <button onclick="clearPicks('s')" style="margin-left:auto;padding:4px 12px;border-radius:10px;border:1.5px solid #DC2626;background:#fff;color:#DC2626;font-size:.72rem;cursor:pointer;font-weight:700;">✕ 清除勾選</button>
+  </div>
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th style="width:36px;text-align:center;"><input type="checkbox" id="s-pickall" onclick="togglePickAll('s')" title="勾選全部"></th>
+          <th onclick="sortBy('s','category')">分類 <span class="sa">↕</span></th>
+          <th onclick="sortBy('s','barcode')">條碼 <span class="sa">↕</span></th>
+          <th onclick="sortBy('s','name')">商品名稱 <span class="sa">↕</span></th>
+          <th onclick="sortBy('s','stock')" style="text-align:right">庫存數 <span class="sa">↕</span></th>
+          <th>最近效期</th>
+        </tr></thead>
+        <tbody id="s-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- STORE -->
+<div id="storeScreen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← 返回首頁</button>
+    <span class="topbar-title">🏬 百貨店面庫存</span>
+    <button class="dl-btn" onclick="downloadExcel('store')">⬇ 下載 Excel</button>
+    <span class="topbar-badge">2026/04/10 更新</span>
+  </div>
+  <div class="stats-bar" id="st-stats">
+    <div class="stat-chip"><span>📦 有庫存品項</span><b id="st-total">-</b></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="st-search" placeholder="搜尋商品名稱、條碼…" oninput="renderStore()">
+    </div>
+    <div class="filter-row" id="st-storerow">
+      <span class="filter-label">店別：</span>
+      <button class="cat-btn active" data-store="" onclick="selectStore('')">全部</button>
+    </div>
+    <div class="filter-row" id="st-catrow">
+      <span class="filter-label">分類：</span>
+      <button class="cat-btn active" data-cat="" onclick="selectStoreCat('')">全部</button>
+    </div>
+  </div>
+  <div class="result-count" id="st-count"></div>
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th>分類</th>
+          <th>商品名稱</th>
+          <th style="text-align:right">總庫存</th>
+          <th>各店別數量</th>
+        </tr></thead>
+        <tbody id="st-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- VENDOR (業務給廠商) -->
+<div id="vendorScreen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← 返回首頁</button>
+    <span class="topbar-title">📦 業務・外包出貨效期</span>
+    <button class="dl-btn" onclick="downloadExcel('vendor')">⬇ 下載 Excel</button>
+    <span class="topbar-badge">2026/04/10 更新</span>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-chip"><span>📦 品項數</span><b id="v-total">-</b></div>
+    <div class="stat-chip"><span>✅ 已勾選</span><b id="v-selcount">0</b></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="v-search" placeholder="搜尋商品名稱、條碼…" oninput="renderVendor()">
+    </div>
+    <div class="filter-row" id="v-catrow">
+      <span class="filter-label">分類：</span>
+      <button class="cat-btn active" data-cat="" onclick="selectVendorCat('')">全部</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">勾選：</span>
+      <button class="cat-btn" id="v-onlysel-btn" onclick="toggleOnlySelected()">只看已勾選</button>
+      <button class="cat-btn" onclick="clearVendorSel()">清除勾選</button>
+    </div>
+  </div>
+  <div class="legend">
+    <span style="font-weight:600;color:#374151;">效期：</span>
+    <span class="legend-item"><span class="ldot leg-r"></span>6個月內</span>
+    <span class="legend-item"><span class="ldot leg-y"></span>6–12個月</span>
+    <span class="legend-item"><span class="ldot leg-g"></span>12個月以上</span>
+  </div>
+  <div class="result-count" id="v-count"></div>
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th style="width:42px;text-align:center"><input type="checkbox" id="v-checkall" onchange="toggleAllVendorSel(this.checked)"></th>
+          <th>分類</th>
+          <th>條碼</th>
+          <th>商品名稱</th>
+          <th>最近效期</th>
+        </tr></thead>
+        <tbody id="v-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const DATA = [{"category": "居家清潔", "name": "淨淨剋菌液 10倍濃縮 500ml", "barcode": "4713233981553", "stock": 3608, "batches": [{"date": "2027/05/16", "qty": 3505, "loc": "外包"}, {"date": "2026/08/10", "qty": 29, "loc": "公司庫"}, {"date": "", "qty": 19, "loc": "易網通不良品"}, {"date": "", "qty": 5, "loc": "竹南門市"}, {"date": "", "qty": 25, "loc": "新竹巨城"}, {"date": "", "qty": 2, "loc": "台中lalaport"}, {"date": "", "qty": 23, "loc": "台南南紡"}], "first_expiry": "2027/05/16"}, {"category": "居家清潔", "name": "淨淨剋菌液 居家瓶 300ml", "barcode": "4713233981621", "stock": 4906, "batches": [{"date": "2027/01/04", "qty": 2223, "loc": "外包"}, {"date": "2027/01/26", "qty": 2509, "loc": "外包"}, {"date": "2026/10/26", "qty": 39, "loc": "公司庫"}, {"date": "", "qty": 3, "loc": "易網通不良品"}, {"date": "", "qty": 4, "loc": "竹南門市"}, {"date": "", "qty": 36, "loc": "新竹巨城"}, {"date": "", "qty": 38, "loc": "台中lalaport"}, {"date": "", "qty": 54, "loc": "台南南紡"}], "first_expiry": "2027/01/04"}, {"category": "居家清潔", "name": "淨淨剋菌液 隨身瓶 100ml", "barcode": "4713233986664", "stock": 7571, "batches": [{"date": "2027/01/04", "qty": 4242, "loc": "外包"}, {"date": "2027/03/08", "qty": 3106, "loc": "外包"}, {"date": "2026/11/16", "qty": 52, "loc": "公司庫"}, {"date": "", "qty": 3, "loc": "易網通不良品"}, {"date": "", "qty": 22, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 18, "loc": "台中lalaport"}, {"date": "", "qty": 78, "loc": "台南南紡"}], "first_expiry": "2027/01/04"}, {"category": "居家清潔", "name": "食器清潔皂 慕斯瓶 500ml", "barcode": "4713233981256", "stock": 9935, "batches": [{"date": "2029/01/12", "qty": 9568, "loc": "外包"}, {"date": "2028/02/20", "qty": 47, "loc": "公司庫"}, {"date": "", "qty": 4, "loc": "不良品倉"}, {"date": "", "qty": 4, "loc": "易網通不良品"}, {"date": "", "qty": 93, "loc": "C2C"}, {"date": "", "qty": 40, "loc": "竹南門市"}, {"date": "", "qty": 48, "loc": "新竹巨城"}, {"date": "", "qty": 49, "loc": "台中lalaport"}, {"date": "", "qty": 82, "loc": "台南南紡"}], "first_expiry": "2029/01/12"}, {"category": "居家清潔", "name": "食器清潔皂 補充瓶 500ml", "barcode": "4713233981263", "stock": 12769, "batches": [{"date": "2029/01/01", "qty": 2383, "loc": "外包"}, {"date": "2029/02/02", "qty": 10020, "loc": "外包"}, {"date": "2028/10/12", "qty": 54, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 126, "loc": "C2C"}, {"date": "", "qty": 62, "loc": "竹南門市"}, {"date": "", "qty": 60, "loc": "新竹巨城"}, {"date": "", "qty": 62, "loc": "台南南紡"}], "first_expiry": "2029/01/01"}, {"category": "居家清潔", "name": "食器清潔皂 隨身瓶 50ml", "barcode": "4713233982253", "stock": 1906, "batches": [{"date": "2029/01/01", "qty": 1750, "loc": "外包"}, {"date": "2027/10/24", "qty": 41, "loc": "公司庫"}, {"date": "", "qty": 29, "loc": "C2C"}, {"date": "", "qty": 17, "loc": "竹南門市"}, {"date": "", "qty": 30, "loc": "新竹巨城"}, {"date": "", "qty": 26, "loc": "台中lalaport"}, {"date": "", "qty": 13, "loc": "台南南紡"}], "first_expiry": "2029/01/01"}, {"category": "居家清潔", "name": "速效除垢慕斯 泡沫噴瓶 500ml", "barcode": "4713233981300", "stock": 31, "batches": [{"date": "2028/08/07", "qty": 30, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "不良品倉"}], "first_expiry": "2028/08/07"}, {"category": "居家清潔", "name": "速效除垢慕斯 補充瓶 500ml", "barcode": "4713233981317", "stock": 804, "batches": [{"date": "2028/10/08", "qty": 676, "loc": "外包"}, {"date": "2028/01/08", "qty": 50, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "不良品倉"}, {"date": "", "qty": 50, "loc": "竹南門市"}, {"date": "", "qty": 27, "loc": "台南南紡"}], "first_expiry": "2028/10/08"}, {"category": "居家清潔", "name": "速效除垢慕斯 新版【瓶蓋版】 500ml", "barcode": "4713233981294", "stock": 23193, "batches": [{"date": "2028/12/08", "qty": 2864, "loc": "外包"}, {"date": "2028/12/16", "qty": 10008, "loc": "外包"}, {"date": "2029/02/03", "qty": 1198, "loc": "外包"}, {"date": "2029/02/05", "qty": 1200, "loc": "外包"}, {"date": "2029/02/08", "qty": 1200, "loc": "外包"}, {"date": "2029/02/23", "qty": 1200, "loc": "外包"}, {"date": "2029/02/25", "qty": 2400, "loc": "外包"}, {"date": "2029/03/02", "qty": 1200, "loc": "外包"}, {"date": "2029/03/04", "qty": 1600, "loc": "外包"}, {"date": "2028/12/08", "qty": 19, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 90, "loc": "新竹巨城"}, {"date": "", "qty": 91, "loc": "台中lalaport"}, {"date": "", "qty": 121, "loc": "台南南紡"}], "first_expiry": "2028/12/08"}, {"category": "居家清潔", "name": "速效除垢慕斯 噴槍(單獨)", "barcode": "E10", "stock": 11934, "batches": [{"date": "2999/12/31", "qty": 11573, "loc": "外包"}, {"date": "", "qty": 75, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 36, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 60, "loc": "台中lalaport"}, {"date": "", "qty": 139, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "居家清潔", "name": "速效除黴凝膠 尖嘴瓶 150ml", "barcode": "4713233981539", "stock": 5650, "batches": [{"date": "2027/12/07", "qty": 4941, "loc": "外包"}, {"date": "2027/12/09", "qty": 40, "loc": "外包"}, {"date": "2027/11/05", "qty": 118, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 238, "loc": "蝦皮寄倉"}, {"date": "", "qty": 127, "loc": "竹南門市"}, {"date": "", "qty": 80, "loc": "新竹巨城"}, {"date": "", "qty": 53, "loc": "台中lalaport"}, {"date": "", "qty": 51, "loc": "台南南紡"}], "first_expiry": "2027/12/07"}, {"category": "居家清潔", "name": "濃縮家事皂 按壓瓶 700ml", "barcode": "4713233981324", "stock": 5507, "batches": [{"date": "2028/12/10", "qty": 3354, "loc": "外包"}, {"date": "2029/03/29", "qty": 1820, "loc": "外包"}, {"date": "2028/12/10", "qty": 35, "loc": "公司庫"}, {"date": "", "qty": 6, "loc": "易網通不良品"}, {"date": "", "qty": 128, "loc": "C2C"}, {"date": "", "qty": 26, "loc": "竹南門市"}, {"date": "", "qty": 56, "loc": "新竹巨城"}, {"date": "", "qty": 37, "loc": "台中lalaport"}, {"date": "", "qty": 45, "loc": "台南南紡"}], "first_expiry": "2028/12/10"}, {"category": "居家清潔", "name": "專用小噴瓶 泡沫噴瓶 300ml", "barcode": "4713233983823", "stock": 13131, "batches": [{"date": "2999/12/31", "qty": 12744, "loc": "外包"}, {"date": "", "qty": 164, "loc": "公司庫"}, {"date": "", "qty": 41, "loc": "C2C"}, {"date": "", "qty": 35, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 31, "loc": "台中lalaport"}, {"date": "", "qty": 66, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "居家清潔", "name": "真濃縮洗衣精 標準瓶(第二版) 800ml", "barcode": "4713233981355", "stock": 4381, "batches": [{"date": "2028/12/03", "qty": 258, "loc": "外包"}, {"date": "2029/01/22", "qty": 3635, "loc": "外包"}, {"date": "2028/12/03", "qty": 51, "loc": "公司庫"}, {"date": "", "qty": 6, "loc": "易網通不良品"}, {"date": "", "qty": 164, "loc": "蝦皮寄倉"}, {"date": "", "qty": 146, "loc": "C2C"}, {"date": "", "qty": 44, "loc": "竹南門市"}, {"date": "", "qty": 3, "loc": "台中lalaport"}, {"date": "", "qty": 74, "loc": "台南南紡"}], "first_expiry": "2028/12/03"}, {"category": "居家清潔", "name": "真濃縮洗衣精 補充罐(第二版) 800ml", "barcode": "4713233981362", "stock": 1034, "batches": [{"date": "2029/01/26", "qty": 478, "loc": "外包"}, {"date": "2029/01/12", "qty": 47, "loc": "公司庫"}, {"date": "", "qty": 11, "loc": "易網通不良品"}, {"date": "", "qty": 327, "loc": "蝦皮寄倉"}, {"date": "", "qty": 101, "loc": "C2C"}, {"date": "", "qty": 29, "loc": "竹南門市"}, {"date": "", "qty": 41, "loc": "台南南紡"}], "first_expiry": "2029/01/26"}, {"category": "居家清潔", "name": "真濃縮洗衣精 新版(瓶蓋版) 800ml", "barcode": "4713233981447", "stock": 32911, "batches": [{"date": "2029/01/26", "qty": 12534, "loc": "外包"}, {"date": "2029/03/01", "qty": 10010, "loc": "外包"}, {"date": "2029/03/09", "qty": 10080, "loc": "外包"}, {"date": "2029/01/26", "qty": 52, "loc": "公司庫"}, {"date": "", "qty": 14, "loc": "竹南門市"}, {"date": "", "qty": 70, "loc": "新竹巨城"}, {"date": "", "qty": 83, "loc": "台中lalaport"}, {"date": "", "qty": 68, "loc": "台南南紡"}], "first_expiry": "2029/01/26"}, {"category": "居家清潔", "name": "真濃縮洗衣精 迷你瓶 30ml", "barcode": "4713233981379", "stock": 5707, "batches": [{"date": "2029/01/22", "qty": 3431, "loc": "外包"}, {"date": "2029/03/09", "qty": 1980, "loc": "外包"}, {"date": "2029/01/22", "qty": 137, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 32, "loc": "竹南門市"}, {"date": "", "qty": 81, "loc": "台中lalaport"}, {"date": "", "qty": 45, "loc": "台南南紡"}], "first_expiry": "2029/01/22"}, {"category": "居家清潔", "name": "真濃縮洗衣精 隨身包 10ml", "barcode": "4713233981430", "stock": 17632, "batches": [{"date": "2028/10/07", "qty": 6531, "loc": "外包"}, {"date": "2028/10/14", "qty": 10000, "loc": "外包"}, {"date": "2028/09/08", "qty": 274, "loc": "公司庫"}, {"date": "", "qty": 167, "loc": "竹南門市"}, {"date": "", "qty": 200, "loc": "新竹巨城"}, {"date": "", "qty": 460, "loc": "台中lalaport"}], "first_expiry": "2028/10/07"}, {"category": "居家清潔", "name": "真濃縮洗衣精 壓頭(單獨)", "barcode": "E13", "stock": 9142, "batches": [{"date": "2999/12/31", "qty": 8938, "loc": "外包"}, {"date": "", "qty": 15, "loc": "公司庫"}, {"date": "", "qty": 30, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 53, "loc": "台中lalaport"}, {"date": "", "qty": 56, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 純淨無香 600ml", "barcode": "4713233984622", "stock": 1639, "batches": [{"date": "2027/12/08", "qty": 8, "loc": "外包"}, {"date": "2028/11/09", "qty": 1524, "loc": "外包"}, {"date": "2027/12/08", "qty": 34, "loc": "公司庫"}, {"date": "", "qty": 3, "loc": "易網通不良品"}, {"date": "", "qty": 24, "loc": "蝦皮寄倉"}, {"date": "", "qty": 21, "loc": "竹南門市"}, {"date": "", "qty": 12, "loc": "新竹巨城"}, {"date": "", "qty": 10, "loc": "台中lalaport"}, {"date": "", "qty": 3, "loc": "台南南紡"}], "first_expiry": "2027/12/08"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 日光棉花 600ml", "barcode": "4713233984639", "stock": 3826, "batches": [{"date": "2028/03/09", "qty": 190, "loc": "外包"}, {"date": "2028/10/30", "qty": 3489, "loc": "外包"}, {"date": "2028/03/09", "qty": 43, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 24, "loc": "蝦皮寄倉"}, {"date": "", "qty": 20, "loc": "竹南門市"}, {"date": "", "qty": 36, "loc": "新竹巨城"}, {"date": "", "qty": 23, "loc": "台南南紡"}], "first_expiry": "2028/03/09"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 50ml", "barcode": "4713233984653", "stock": 3682, "batches": [{"date": "2029/01/27", "qty": 3130, "loc": "外包"}, {"date": "2028/01/21", "qty": 79, "loc": "公司庫"}, {"date": "", "qty": 30, "loc": "竹南門市"}, {"date": "", "qty": 120, "loc": "新竹巨城"}, {"date": "", "qty": 110, "loc": "台中lalaport"}, {"date": "", "qty": 213, "loc": "台南南紡"}], "first_expiry": "2029/01/27"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 療癒花語 600ml", "barcode": "4713233984646", "stock": 5590, "batches": [{"date": "2028/02/25", "qty": 1017, "loc": "外包"}, {"date": "2028/11/09", "qty": 4416, "loc": "外包"}, {"date": "2028/02/25", "qty": 42, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 24, "loc": "蝦皮寄倉"}, {"date": "", "qty": 17, "loc": "竹南門市"}, {"date": "", "qty": 36, "loc": "新竹巨城"}, {"date": "", "qty": 36, "loc": "台南南紡"}], "first_expiry": "2028/02/25"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 50ml", "barcode": "4713233984660", "stock": 3024, "batches": [{"date": "2029/03/01", "qty": 2688, "loc": "外包"}, {"date": "2028/03/12", "qty": 56, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "不良品倉"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 42, "loc": "竹南門市"}, {"date": "", "qty": 180, "loc": "新竹巨城"}, {"date": "", "qty": 35, "loc": "台中lalaport"}, {"date": "", "qty": 21, "loc": "台南南紡"}], "first_expiry": "2029/03/01"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 日光棉花 500ml", "barcode": "4713233984677", "stock": 8487, "batches": [{"date": "2028/01/03", "qty": 369, "loc": "外包"}, {"date": "2028/03/23", "qty": 7990, "loc": "外包"}, {"date": "2028/01/03", "qty": 28, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 24, "loc": "蝦皮寄倉"}, {"date": "", "qty": 22, "loc": "竹南門市"}, {"date": "", "qty": 24, "loc": "新竹巨城"}, {"date": "", "qty": 14, "loc": "台中lalaport"}, {"date": "", "qty": 14, "loc": "台南南紡"}], "first_expiry": "2028/01/03"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 30ml", "barcode": "4713233984691", "stock": 5617, "batches": [{"date": "2027/10/13", "qty": 371, "loc": "外包"}, {"date": "2028/01/03", "qty": 4940, "loc": "外包"}, {"date": "2027/10/13", "qty": 51, "loc": "公司庫"}, {"date": "", "qty": 51, "loc": "竹南門市"}, {"date": "", "qty": 52, "loc": "新竹巨城"}, {"date": "", "qty": 55, "loc": "台中lalaport"}, {"date": "", "qty": 97, "loc": "台南南紡"}], "first_expiry": "2027/10/13"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 8ml", "barcode": "4713233984752", "stock": 4523, "batches": [{"date": "2028/07/29", "qty": 1614, "loc": "外包"}, {"date": "2028/09/24", "qty": 2831, "loc": "外包"}, {"date": "", "qty": 48, "loc": "竹南門市"}, {"date": "", "qty": 30, "loc": "台南南紡"}], "first_expiry": "2028/07/29"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 療癒花語 500ml", "barcode": "4713233984684", "stock": 4125, "batches": [{"date": "2027/12/01", "qty": 6, "loc": "外包"}, {"date": "2028/01/16", "qty": 3986, "loc": "外包"}, {"date": "2027/12/01", "qty": 29, "loc": "公司庫"}, {"date": "", "qty": 24, "loc": "蝦皮寄倉"}, {"date": "", "qty": 22, "loc": "竹南門市"}, {"date": "", "qty": 24, "loc": "新竹巨城"}, {"date": "", "qty": 14, "loc": "台中lalaport"}, {"date": "", "qty": 20, "loc": "台南南紡"}], "first_expiry": "2027/12/01"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 30ml", "barcode": "4713233984707", "stock": 2697, "batches": [{"date": "2027/12/01", "qty": 2374, "loc": "外包"}, {"date": "2027/12/01", "qty": 71, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 41, "loc": "竹南門市"}, {"date": "", "qty": 40, "loc": "新竹巨城"}, {"date": "", "qty": 53, "loc": "台中lalaport"}, {"date": "", "qty": 117, "loc": "台南南紡"}], "first_expiry": "2027/12/01"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 8ml", "barcode": "4713233984769", "stock": 14656, "batches": [{"date": "2028/07/29", "qty": 6340, "loc": "外包"}, {"date": "2028/09/24", "qty": 8136, "loc": "外包"}, {"date": "", "qty": 50, "loc": "竹南門市"}, {"date": "", "qty": 100, "loc": "台中lalaport"}, {"date": "", "qty": 30, "loc": "台南南紡"}], "first_expiry": "2028/07/29"}, {"category": "肌膚滋養", "name": "植潤．水凝乳 療癒花語 300ml", "barcode": "4713233984738", "stock": 8541, "batches": [{"date": "2028/09/24", "qty": 28, "loc": "外包"}, {"date": "2028/09/30", "qty": 1614, "loc": "外包"}, {"date": "2028/10/01", "qty": 17, "loc": "外包"}, {"date": "2028/10/02", "qty": 944, "loc": "外包"}, {"date": "2028/10/06", "qty": 756, "loc": "外包"}, {"date": "2028/10/13", "qty": 400, "loc": "外包"}, {"date": "2028/10/14", "qty": 603, "loc": "外包"}, {"date": "2028/10/15", "qty": 597, "loc": "外包"}, {"date": "2028/10/16", "qty": 739, "loc": "外包"}, {"date": "2028/10/19", "qty": 861, "loc": "外包"}, {"date": "2028/10/20", "qty": 471, "loc": "外包"}, {"date": "2028/10/21", "qty": 662, "loc": "外包"}, {"date": "2028/10/22", "qty": 667, "loc": "外包"}, {"date": "2028/09/23", "qty": 76, "loc": "公司庫"}, {"date": "", "qty": 16, "loc": "竹南門市"}, {"date": "", "qty": 30, "loc": "新竹巨城"}, {"date": "", "qty": 23, "loc": "台中lalaport"}, {"date": "", "qty": 37, "loc": "台南南紡"}], "first_expiry": "2028/09/24"}, {"category": "肌膚滋養", "name": "植潤．水凝乳 8ml", "barcode": "4713233984745", "stock": 5690, "batches": [{"date": "2028/10/29", "qty": 4476, "loc": "外包"}, {"date": "2028/10/29", "qty": 125, "loc": "公司庫"}, {"date": "", "qty": 293, "loc": "竹南門市"}, {"date": "", "qty": 100, "loc": "新竹巨城"}, {"date": "", "qty": 612, "loc": "台中lalaport"}, {"date": "", "qty": 84, "loc": "台南南紡"}], "first_expiry": "2028/10/29"}, {"category": "潔顏系列", "name": "護敏無泡潔顏露 標準瓶 150ml", "barcode": "4713233984509", "stock": 3663, "batches": [{"date": "2027/12/02", "qty": 3529, "loc": "外包"}, {"date": "2027/12/02", "qty": 44, "loc": "公司庫"}, {"date": "", "qty": 31, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 10, "loc": "台中lalaport"}, {"date": "", "qty": 29, "loc": "台南南紡"}], "first_expiry": "2027/12/02"}, {"category": "潔顏系列", "name": "護敏無泡潔顏露 體驗瓶 20ml", "barcode": "4713233984516", "stock": 1333, "batches": [{"date": "2027/12/02", "qty": 1166, "loc": "外包"}, {"date": "2027/12/02", "qty": 100, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 14, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 11, "loc": "台中lalaport"}, {"date": "", "qty": 21, "loc": "台南南紡"}], "first_expiry": "2027/12/02"}, {"category": "潔顏系列", "name": "胺基酸溫和潔顏慕斯 標準瓶 150ml", "barcode": "4713233984523", "stock": 11208, "batches": [{"date": "2028/06/15", "qty": 5, "loc": "外包"}, {"date": "2028/09/24", "qty": 1031, "loc": "外包"}, {"date": "2028/11/02", "qty": 2406, "loc": "外包"}, {"date": "2028/11/12", "qty": 2544, "loc": "外包"}, {"date": "2028/12/07", "qty": 5040, "loc": "外包"}, {"date": "2028/06/15", "qty": 76, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 21, "loc": "竹南門市"}, {"date": "", "qty": 48, "loc": "新竹巨城"}, {"date": "", "qty": 2, "loc": "台中lalaport"}, {"date": "", "qty": 34, "loc": "台南南紡"}], "first_expiry": "2028/06/15"}, {"category": "潔顏系列", "name": "胺基酸溫和潔顏慕斯 體驗瓶 30ml", "barcode": "4713233984530", "stock": 2798, "batches": [{"date": "2028/09/24", "qty": 5, "loc": "外包"}, {"date": "2028/12/07", "qty": 2298, "loc": "外包"}, {"date": "2028/09/24", "qty": 69, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 25, "loc": "竹南門市"}, {"date": "", "qty": 112, "loc": "新竹巨城"}, {"date": "", "qty": 195, "loc": "台中lalaport"}, {"date": "", "qty": 92, "loc": "台南南紡"}], "first_expiry": "2028/09/24"}, {"category": "潔顏系列", "name": "胺基酸深層潔顏乳 標準瓶 120ml", "barcode": "4713233984547", "stock": 10982, "batches": [{"date": "2028/12/30", "qty": 1977, "loc": "外包"}, {"date": "2029/01/01", "qty": 264, "loc": "外包"}, {"date": "2028/12/29", "qty": 73, "loc": "公司庫"}, {"date": "", "qty": 8555, "loc": "研一"}, {"date": "", "qty": 23, "loc": "竹南門市"}, {"date": "", "qty": 35, "loc": "新竹巨城"}, {"date": "", "qty": 28, "loc": "台中lalaport"}, {"date": "", "qty": 27, "loc": "台南南紡"}], "first_expiry": "2028/12/30"}, {"category": "潔顏系列", "name": "胺基酸深層潔顏乳 體驗瓶 20ml", "barcode": "4713233984554", "stock": 8311, "batches": [{"date": "2029/01/01", "qty": 4282, "loc": "外包"}, {"date": "2029/01/01", "qty": 79, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 3822, "loc": "研一"}, {"date": "", "qty": 16, "loc": "竹南門市"}, {"date": "", "qty": 30, "loc": "新竹巨城"}, {"date": "", "qty": 49, "loc": "台中lalaport"}, {"date": "", "qty": 31, "loc": "台南南紡"}], "first_expiry": "2029/01/01"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 薄荷 150g", "barcode": "4713233984561", "stock": 16331, "batches": [{"date": "2028/12/05", "qty": 2, "loc": "外包"}, {"date": "2028/12/06", "qty": 817, "loc": "外包"}, {"date": "2028/12/07", "qty": 2580, "loc": "外包"}, {"date": "2028/12/08", "qty": 2600, "loc": "外包"}, {"date": "2029/02/08", "qty": 2460, "loc": "外包"}, {"date": "2029/02/09", "qty": 2460, "loc": "外包"}, {"date": "2029/02/10", "qty": 2460, "loc": "外包"}, {"date": "2029/02/11", "qty": 2600, "loc": "外包"}, {"date": "2028/12/05", "qty": 87, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 109, "loc": "C2C"}, {"date": "", "qty": 23, "loc": "竹南門市"}, {"date": "", "qty": 60, "loc": "新竹巨城"}, {"date": "", "qty": 27, "loc": "台中lalaport"}, {"date": "", "qty": 45, "loc": "台南南紡"}], "first_expiry": "2028/12/05"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 20g", "barcode": "4713233984714", "stock": 2009, "batches": [{"date": "2028/10/15", "qty": 31, "loc": "外包"}, {"date": "2028/12/05", "qty": 1776, "loc": "外包"}, {"date": "2028/10/15", "qty": 75, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 30, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 49, "loc": "台中lalaport"}, {"date": "", "qty": 27, "loc": "台南南紡"}], "first_expiry": "2028/10/15"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 薄荷(無氟) 150g", "barcode": "4713233984578", "stock": 2792, "batches": [{"date": "2028/02/13", "qty": 1325, "loc": "外包"}, {"date": "2028/02/14", "qty": 1217, "loc": "外包"}, {"date": "2028/02/13", "qty": 59, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 92, "loc": "C2C"}, {"date": "", "qty": 21, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 18, "loc": "台中lalaport"}, {"date": "", "qty": 39, "loc": "台南南紡"}], "first_expiry": "2028/02/13"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 20g", "barcode": "4713233984721", "stock": 1198, "batches": [{"date": "2028/02/13", "qty": 1039, "loc": "外包"}, {"date": "2028/02/13", "qty": 69, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 13, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 27, "loc": "台中lalaport"}, {"date": "", "qty": 29, "loc": "台南南紡"}], "first_expiry": "2028/02/13"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 草莓 75g", "barcode": "4713233984585", "stock": 480, "batches": [{"date": "2028/02/26", "qty": 230, "loc": "外包"}, {"date": "2028/02/26", "qty": 135, "loc": "公司庫"}, {"date": "", "qty": 24, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 12, "loc": "台中lalaport"}, {"date": "", "qty": 29, "loc": "台南南紡"}], "first_expiry": "2028/02/26"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 葡萄 75g", "barcode": "4713233984608", "stock": 802, "batches": [{"date": "2028/02/18", "qty": 537, "loc": "外包"}, {"date": "2028/02/18", "qty": 159, "loc": "公司庫"}, {"date": "", "qty": 23, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 33, "loc": "台南南紡"}], "first_expiry": "2028/02/18"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 草莓(無氟) 75g", "barcode": "4713233984592", "stock": 2939, "batches": [{"date": "2028/02/23", "qty": 2787, "loc": "外包"}, {"date": "2028/02/23", "qty": 50, "loc": "公司庫"}, {"date": "", "qty": 22, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 12, "loc": "台中lalaport"}, {"date": "", "qty": 48, "loc": "台南南紡"}], "first_expiry": "2028/02/23"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 葡萄(無氟) 75g", "barcode": "4713233984615", "stock": 2764, "batches": [{"date": "2028/02/13", "qty": 2591, "loc": "外包"}, {"date": "2028/02/13", "qty": 89, "loc": "公司庫"}, {"date": "", "qty": 23, "loc": "竹南門市"}, {"date": "", "qty": 20, "loc": "新竹巨城"}, {"date": "", "qty": 12, "loc": "台中lalaport"}, {"date": "", "qty": 29, "loc": "台南南紡"}], "first_expiry": "2028/02/13"}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽/包 15抽/包", "barcode": "4713233981393", "stock": 43, "batches": [{"date": "2027/10/06", "qty": 17, "loc": "外包"}, {"date": "2026/10/29", "qty": 2, "loc": "公司庫"}, {"date": "", "qty": 24, "loc": "竹南門市"}], "first_expiry": "2027/10/06"}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽×5包/串 15抽×5包/串", "barcode": "4713233981409", "stock": 109, "batches": [{"date": "2027/10/06", "qty": 29, "loc": "外包"}, {"date": "2026/11/07", "qty": 3, "loc": "公司庫"}, {"date": "", "qty": 65, "loc": "蝦皮寄倉"}, {"date": "", "qty": 12, "loc": "竹南門市"}], "first_expiry": "2027/10/06"}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽×40包/箱 15抽×40包/箱", "barcode": "4713233981423", "stock": 396, "batches": [{"date": "2027/10/06", "qty": 356, "loc": "外包"}, {"date": "2027/10/06", "qty": 6, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "竹南門市"}, {"date": "", "qty": 6, "loc": "新竹巨城"}, {"date": "", "qty": 16, "loc": "台中lalaport"}, {"date": "", "qty": 10, "loc": "台南南紡"}], "first_expiry": "2027/10/06"}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽/包 70抽/包", "barcode": "4713233981386", "stock": 37, "batches": [{"date": "2026/11/14", "qty": 2, "loc": "外包"}, {"date": "2027/10/08", "qty": 24, "loc": "外包"}, {"date": "2026/11/04", "qty": 11, "loc": "公司庫"}], "first_expiry": "2026/11/14"}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽×3包/串 70抽×3包/串", "barcode": "4713233981454", "stock": 74, "batches": [{"date": "2028/01/28", "qty": 7, "loc": "外包"}, {"date": "2027/10/08", "qty": 3, "loc": "公司庫"}, {"date": "", "qty": 64, "loc": "蝦皮寄倉"}], "first_expiry": "2028/01/28"}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽×12包/箱 70抽×12包/箱", "barcode": "4713233981416", "stock": 91, "batches": [{"date": "2027/10/08", "qty": 6, "loc": "外包"}, {"date": "2028/01/28", "qty": 30, "loc": "外包"}, {"date": "2028/01/28", "qty": 29, "loc": "公司庫"}, {"date": "", "qty": 10, "loc": "新竹巨城"}, {"date": "", "qty": 7, "loc": "台中lalaport"}, {"date": "", "qty": 9, "loc": "台南南紡"}], "first_expiry": "2027/10/08"}, {"category": "精油系列", "name": "淨心芳療 薰衣草 10ml", "barcode": "4713233984011", "stock": 551, "batches": [{"date": "2026/09/24", "qty": 489, "loc": "外包"}, {"date": "2026/10/16", "qty": 48, "loc": "外包"}, {"date": "2026/10/16", "qty": 7, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "不良品倉"}, {"date": "", "qty": 2, "loc": "竹南門市"}, {"date": "", "qty": 1, "loc": "台中lalaport"}, {"date": "", "qty": 2, "loc": "台南南紡"}], "first_expiry": "2026/09/24"}, {"category": "精油系列", "name": "淨心芳療 葡萄柚 10ml", "barcode": "4713233984028", "stock": 501, "batches": [{"date": "2026/10/16", "qty": 385, "loc": "外包"}, {"date": "2026/10/16", "qty": 7, "loc": "公司庫"}, {"date": "", "qty": 101, "loc": "不良品倉"}, {"date": "", "qty": 4, "loc": "竹南門市"}, {"date": "", "qty": 3, "loc": "台中lalaport"}, {"date": "", "qty": 1, "loc": "台南南紡"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 乳香 10ml", "barcode": "4713233984035", "stock": 264, "batches": [{"date": "", "qty": 257, "loc": "不良品倉"}, {"date": "", "qty": 4, "loc": "易網通不良品"}, {"date": "", "qty": 1, "loc": "台中lalaport"}, {"date": "", "qty": 2, "loc": "台南南紡"}], "first_expiry": null}, {"category": "精油系列", "name": "淨心芳療 茶樹 10ml", "barcode": "4713233984042", "stock": 593, "batches": [{"date": "2026/10/16", "qty": 440, "loc": "外包"}, {"date": "2026/10/16", "qty": 5, "loc": "公司庫"}, {"date": "", "qty": 141, "loc": "不良品倉"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 3, "loc": "台中lalaport"}, {"date": "", "qty": 2, "loc": "台南南紡"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 尤加利 10ml", "barcode": "4713233984059", "stock": 79, "batches": [{"date": "2026/10/16", "qty": 71, "loc": "外包"}, {"date": "2026/10/16", "qty": 3, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "竹南門市"}, {"date": "", "qty": 2, "loc": "台中lalaport"}, {"date": "", "qty": 1, "loc": "台南南紡"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 歐薄荷 10ml", "barcode": "4713233984066", "stock": 1060, "batches": [{"date": "2026/10/16", "qty": 816, "loc": "外包"}, {"date": "2026/10/16", "qty": 3, "loc": "公司庫"}, {"date": "", "qty": 234, "loc": "不良品倉"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 2, "loc": "竹南門市"}, {"date": "", "qty": 2, "loc": "台中lalaport"}, {"date": "", "qty": 2, "loc": "台南南紡"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 玫瑰天竺葵 10ml", "barcode": "4713233984073", "stock": 391, "batches": [{"date": "2026/11/12", "qty": 304, "loc": "外包"}, {"date": "2026/11/12", "qty": 57, "loc": "公司庫"}, {"date": "", "qty": 25, "loc": "不良品倉"}, {"date": "", "qty": 3, "loc": "台中lalaport"}, {"date": "", "qty": 2, "loc": "台南南紡"}], "first_expiry": "2026/11/12"}, {"category": "精油系列", "name": "淨心芳療 淨心複方植物油100ml 100ml", "barcode": "4713233984202", "stock": 816, "batches": [{"date": "2027/12/15", "qty": 784, "loc": "外包"}, {"date": "2026/06/04", "qty": 27, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 4, "loc": "竹南門市"}], "first_expiry": "2027/12/15"}, {"category": "精油系列", "name": "精油週邊 淨心水晶滾珠瓶10ml*3入組 3入/盒", "barcode": "4713233984332", "stock": 1199, "batches": [{"date": "2999/12/31", "qty": 1166, "loc": "外包"}, {"date": "", "qty": 27, "loc": "公司庫"}, {"date": "", "qty": 3, "loc": "竹南門市"}, {"date": "", "qty": 1, "loc": "台中lalaport"}, {"date": "", "qty": 2, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "精油系列", "name": "精油週邊 淨心擴香木 3入組 3入/盒", "barcode": "4713233984349", "stock": 1149, "batches": [{"date": "2999/12/31", "qty": 1145, "loc": "外包"}, {"date": "", "qty": 1, "loc": "竹南門市"}, {"date": "", "qty": 3, "loc": "台中lalaport"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨悠遊卡 1入", "barcode": "4713233989528", "stock": 96, "batches": [{"date": "", "qty": 86, "loc": "公司庫"}, {"date": "", "qty": 10, "loc": "台中lalaport"}], "first_expiry": null}, {"category": "其他", "name": "2025蛇年紅包袋", "barcode": "4713233989672", "stock": 0, "batches": [], "first_expiry": null}, {"category": "其他", "name": "剋菌液量杯", "barcode": "4905596109587", "stock": 699, "batches": [{"date": "2999/12/31", "qty": 696, "loc": "外包"}, {"date": "", "qty": 3, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨精美提袋(大)", "barcode": "4713233989474", "stock": 2718, "batches": [{"date": "2999/12/31", "qty": 1947, "loc": "外包"}, {"date": "", "qty": 674, "loc": "公司庫"}, {"date": "", "qty": 21, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 26, "loc": "台中lalaport"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨精美提袋(小)", "barcode": "B00001", "stock": 0, "batches": [], "first_expiry": null}, {"category": "其他", "name": "淨心芳療提袋(白色)", "barcode": "B00006", "stock": 230, "batches": [{"date": "", "qty": 210, "loc": "公司庫"}, {"date": "", "qty": 20, "loc": "竹南門市"}], "first_expiry": null}, {"category": "其他", "name": "淨淨電繡織帶環保袋(大)", "barcode": "4713233989610", "stock": 3092, "batches": [{"date": "2999/12/31", "qty": 1939, "loc": "外包"}, {"date": "", "qty": 109, "loc": "公司庫"}, {"date": "", "qty": 94, "loc": "竹南門市"}, {"date": "", "qty": 100, "loc": "新竹巨城"}, {"date": "", "qty": 450, "loc": "台中lalaport"}, {"date": "", "qty": 400, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨熱壓環保袋(小)", "barcode": "4713233989627", "stock": 7758, "batches": [{"date": "2999/12/31", "qty": 3726, "loc": "外包"}, {"date": "", "qty": 88, "loc": "公司庫"}, {"date": "", "qty": 1, "loc": "易網通不良品"}, {"date": "", "qty": 294, "loc": "竹南門市"}, {"date": "", "qty": 200, "loc": "新竹巨城"}, {"date": "", "qty": 2449, "loc": "台中lalaport"}, {"date": "", "qty": 1000, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨多功能旅行袋", "barcode": "4713233989603", "stock": 45, "batches": [{"date": "", "qty": 45, "loc": "台中lalaport"}], "first_expiry": null}, {"category": "其他", "name": "淨淨行李吊牌", "barcode": "4713233989597", "stock": 64, "batches": [{"date": "2999/12/31", "qty": 51, "loc": "外包"}, {"date": "", "qty": 13, "loc": "竹南門市"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨質感刺繡圍裙", "barcode": "4713233989634", "stock": 30, "batches": [{"date": "", "qty": 7, "loc": "公司庫"}, {"date": "", "qty": 23, "loc": "竹南門市"}], "first_expiry": null}, {"category": "其他", "name": "淨淨皮革圓形捲尺", "barcode": "4713233989641", "stock": 2, "batches": [{"date": "", "qty": 2, "loc": "台中lalaport"}], "first_expiry": null}, {"category": "其他", "name": "淨淨刺繡高質感洗衣袋(6件組)", "barcode": "4713233989665", "stock": 2306, "batches": [{"date": "2999/12/31", "qty": 2206, "loc": "外包"}, {"date": "", "qty": 5, "loc": "公司庫"}, {"date": "", "qty": 23, "loc": "竹南門市"}, {"date": "", "qty": 30, "loc": "新竹巨城"}, {"date": "", "qty": 31, "loc": "台中lalaport"}, {"date": "", "qty": 11, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨花邊沐浴球", "barcode": "4713233989696", "stock": 33, "batches": [{"date": "", "qty": 6, "loc": "竹南門市"}, {"date": "", "qty": 17, "loc": "台中lalaport"}, {"date": "", "qty": 10, "loc": "台南南紡"}], "first_expiry": null}, {"category": "其他", "name": "淨淨｜棉花針織手腕袋", "barcode": "4713233989702", "stock": 1792, "batches": [{"date": "2999/12/31", "qty": 1734, "loc": "外包"}, {"date": "", "qty": 38, "loc": "公司庫"}, {"date": "", "qty": 20, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨杯墊", "barcode": "VIP0001", "stock": 10, "batches": [{"date": "", "qty": 10, "loc": "台中lalaport"}], "first_expiry": null}, {"category": "其他", "name": "淨淨招牌-冰箱貼", "barcode": "4713233989689", "stock": 476, "batches": [{"date": "2999/12/31", "qty": 443, "loc": "外包"}, {"date": "", "qty": 33, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨手持氣球", "barcode": "balloon001", "stock": 0, "batches": [], "first_expiry": null}, {"category": "其他", "name": "淨淨手提開窗盥洗包", "barcode": "4713233989719", "stock": 2501, "batches": [{"date": "2999/12/31", "qty": 2399, "loc": "外包"}, {"date": "", "qty": 43, "loc": "公司庫"}, {"date": "", "qty": 22, "loc": "竹南門市"}, {"date": "", "qty": 27, "loc": "台中lalaport"}, {"date": "", "qty": 10, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "淨淨大容量兩用泡芙包", "barcode": "4713233989726", "stock": 300, "batches": [{"date": "2999/12/31", "qty": 273, "loc": "外包"}, {"date": "", "qty": 23, "loc": "公司庫"}, {"date": "", "qty": 4, "loc": "竹南門市"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "輕便鋁合金摺疊椅", "barcode": "4713233989740", "stock": 60, "batches": [{"date": "2999/12/31", "qty": 38, "loc": "外包"}, {"date": "", "qty": 18, "loc": "公司庫"}, {"date": "", "qty": 4, "loc": "竹南門市"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "QQ造型便利貼", "barcode": "4713233989733", "stock": 983, "batches": [{"date": "2999/12/31", "qty": 712, "loc": "外包"}, {"date": "", "qty": 48, "loc": "公司庫"}, {"date": "", "qty": 159, "loc": "竹南門市"}, {"date": "", "qty": 50, "loc": "新竹巨城"}, {"date": "", "qty": 3, "loc": "台中lalaport"}, {"date": "", "qty": 11, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "熱銷商品造型萬用夾", "barcode": "4713233989764", "stock": 3619, "batches": [{"date": "2999/12/31", "qty": 3462, "loc": "外包"}, {"date": "", "qty": 66, "loc": "公司庫"}, {"date": "", "qty": 2, "loc": "易網通不良品"}, {"date": "", "qty": 43, "loc": "竹南門市"}, {"date": "", "qty": 19, "loc": "台中lalaport"}, {"date": "", "qty": 27, "loc": "台南南紡"}], "first_expiry": "2999/12/31"}, {"category": "其他", "name": "2026馬年紅包袋", "barcode": "4713233989757", "stock": 22, "batches": [{"date": "", "qty": 22, "loc": "台中lalaport"}], "first_expiry": null}, {"category": "紙箱", "name": "202205淨淨單色紙箱S特1", "barcode": "4713233989825", "stock": 11104, "batches": [{"date": "2999/12/31", "qty": 11073, "loc": "外包"}, {"date": "", "qty": 31, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "202205淨淨單色紙箱SS", "barcode": "4713233989832", "stock": 3442, "batches": [{"date": "2999/12/31", "qty": 3413, "loc": "外包"}, {"date": "", "qty": 29, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "202205淨淨單色紙箱S", "barcode": "4713233989870", "stock": 6781, "batches": [{"date": "2999/12/31", "qty": 6763, "loc": "外包"}, {"date": "", "qty": 18, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "202205淨淨單色紙箱M", "barcode": "4713233989863", "stock": 1911, "batches": [{"date": "2999/12/31", "qty": 1881, "loc": "外包"}, {"date": "", "qty": 30, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "202211淨淨單色紙箱MM", "barcode": "4713233989818", "stock": 3810, "batches": [{"date": "2999/12/31", "qty": 3787, "loc": "外包"}, {"date": "", "qty": 23, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "202205淨淨單色紙箱L", "barcode": "4713233989856", "stock": 1972, "batches": [{"date": "2999/12/31", "qty": 1952, "loc": "外包"}, {"date": "", "qty": 20, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "202205淨淨單色紙箱XL", "barcode": "4713233989849", "stock": 825, "batches": [{"date": "2999/12/31", "qty": 814, "loc": "外包"}, {"date": "", "qty": 11, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "紙箱", "name": "淨淨單色紙箱L", "barcode": "4713233989887", "stock": 456, "batches": [{"date": "2999/12/31", "qty": 195, "loc": "外包"}, {"date": "", "qty": 261, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "售後卡", "name": "感謝與售後服務卡 (隨貨附)", "barcode": "CARD-0001", "stock": 9083, "batches": [{"date": "2999/12/31", "qty": 9083, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "天泉", "name": "有機蕎麥D3+", "barcode": "4713233980150", "stock": 79, "batches": [{"date": "2028/09/30", "qty": 79, "loc": "公司庫"}], "first_expiry": "2028/09/30"}, {"category": "天泉", "name": "4合1機能補給素Plus+", "barcode": "4713233980167", "stock": 0, "batches": [], "first_expiry": null}, {"category": "阿清", "name": "魚油(20顆)", "barcode": "4713233989023", "stock": 0, "batches": [], "first_expiry": null}, {"category": "阿清", "name": "魚油(60顆)", "barcode": "4713233989016", "stock": 91, "batches": [{"date": "2028/12/16", "qty": 91, "loc": "公司庫"}], "first_expiry": "2028/12/16"}, {"category": "阿清", "name": "葉黃素10入", "barcode": "4713233989047", "stock": 0, "batches": [], "first_expiry": null}, {"category": "阿清", "name": "葉黃素30入", "barcode": "4713233989030", "stock": 14, "batches": [{"date": "2027/07/01", "qty": 14, "loc": "公司庫"}], "first_expiry": "2027/07/01"}, {"category": "阿清", "name": "冰晶膠原(30包)", "barcode": "4713233989054", "stock": 0, "batches": [], "first_expiry": null}, {"category": "阿清", "name": "納豆紅麴Plus(60顆)", "barcode": "4713233989061", "stock": 0, "batches": [], "first_expiry": null}, {"category": "阿清", "name": "柑橘維生素C", "barcode": "4713233989078", "stock": 400, "batches": [{"date": "2027/08/11", "qty": 400, "loc": "公司庫"}], "first_expiry": "2027/08/11"}, {"category": "阿清", "name": "極致穀胱甘肽GSH(60顆)", "barcode": "4713233989108", "stock": 72, "batches": [{"date": "2027/06/03", "qty": 72, "loc": "公司庫"}], "first_expiry": "2027/06/03"}, {"category": "阿清", "name": "固關捷", "barcode": "4713233989085", "stock": 48, "batches": [{"date": "2026/10/02", "qty": 48, "loc": "公司庫"}], "first_expiry": "2026/10/02"}, {"category": "阿清", "name": "甦活雙效B群", "barcode": "4713233989092", "stock": 0, "batches": [], "first_expiry": null}, {"category": "阿清", "name": "阿清-頂級全方位益生菌粉包(21包)", "barcode": "4713233989122", "stock": 28, "batches": [{"date": "2027/10/06", "qty": 28, "loc": "公司庫"}], "first_expiry": "2027/10/06"}, {"category": "刮鬍刀", "name": "雙層輕便刮鬍刀", "barcode": "3086123191044", "stock": 12652, "batches": [{"date": "2999/12/31", "qty": 12640, "loc": "外包"}, {"date": "", "qty": 12, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "刮鬍刀", "name": "Flex3 三層刮鬍刀", "barcode": "3086123273504", "stock": 2238, "batches": [{"date": "2999/12/31", "qty": 1059, "loc": "外包"}, {"date": "", "qty": 1179, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "刮鬍刀", "name": "三層輕便刮鬍刀", "barcode": "3086123453890", "stock": 0, "batches": [], "first_expiry": null}, {"category": "刮鬍刀", "name": "Flex5 五層刮鬍刀", "barcode": "3086123471238", "stock": 0, "batches": [], "first_expiry": null}, {"category": "公益", "name": "彩虹希望之家公益小卡", "barcode": "4713233989467", "stock": 19, "batches": [{"date": "2999/12/31", "qty": 19, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "50ml 瓶身+泡沫壓頭*1", "barcode": "000-002", "stock": 1252, "batches": [{"date": "", "qty": 1252, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "opp袋", "barcode": "000-006", "stock": 583, "batches": [{"date": "", "qty": 583, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "30ml 瓶身+泡沫壓頭*1", "barcode": "001-002", "stock": 1926, "batches": [{"date": "", "qty": 1926, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液 100ml瓶身*1", "barcode": "A01-002", "stock": 256, "batches": [{"date": "", "qty": 170, "loc": "公司庫"}, {"date": "", "qty": 86, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液 100ml 噴頭*1", "barcode": "A01-003", "stock": 1584, "batches": [{"date": "2999/12/31", "qty": 1200, "loc": "外包"}, {"date": "", "qty": 384, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "剋菌液100ml 瓶貼*1", "barcode": "A01-004", "stock": 3109, "batches": [{"date": "", "qty": 995, "loc": "公司庫"}, {"date": "", "qty": 2114, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液100ml 中束*1", "barcode": "A01-005", "stock": 7381, "batches": [{"date": "2999/12/31", "qty": 6903, "loc": "外包"}, {"date": "", "qty": 406, "loc": "公司庫"}, {"date": "", "qty": 72, "loc": "凱悅"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "剋菌液 100ml原液*1", "barcode": "A01-006", "stock": 0, "batches": [], "first_expiry": null}, {"category": "物料", "name": "剋菌液300ml 瓶身+噴頭*1", "barcode": "A02-002", "stock": 356, "batches": [{"date": "", "qty": 8, "loc": "公司庫"}, {"date": "", "qty": 348, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液300ml 居家瓶(單)噴頭*1", "barcode": "A02-003", "stock": 48, "batches": [{"date": "", "qty": 48, "loc": "公司庫"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液300ml 瓶貼*1", "barcode": "A02-004", "stock": 3786, "batches": [{"date": "", "qty": 2160, "loc": "公司庫"}, {"date": "", "qty": 1626, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液 300ml原液*1", "barcode": "A02-006", "stock": 0, "batches": [], "first_expiry": null}, {"category": "物料", "name": "剋菌液 500ml瓶身*1", "barcode": "A03-002", "stock": 9, "batches": [{"date": "", "qty": 4, "loc": "公司庫"}, {"date": "", "qty": 5, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液 500ml 蓋子*1", "barcode": "A03-003", "stock": 436, "batches": [{"date": "", "qty": 436, "loc": "公司庫"}], "first_expiry": null}, {"category": "物料", "name": "剋菌液500ml 瓶貼*1", "barcode": "A03-004", "stock": 254, "batches": [{"date": "", "qty": 254, "loc": "公司庫"}], "first_expiry": null}, {"category": "物料", "name": "香蓮花 A6718333 (mL)", "barcode": "A6718333", "stock": 530, "batches": [{"date": "", "qty": 530, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "食器皂(共用) 認證貼紙*1", "barcode": "D00-006", "stock": 18955, "batches": [{"date": "2999/12/31", "qty": 4800, "loc": "外包"}, {"date": "", "qty": 3549, "loc": "公司庫"}, {"date": "", "qty": 10606, "loc": "生華隆"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "食器皂 (壓) 壓頭*1", "barcode": "D01-003", "stock": 363, "batches": [{"date": "", "qty": 25, "loc": "公司庫"}, {"date": "", "qty": 338, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "食器皂 (壓) 瓶貼*1", "barcode": "D01-004", "stock": 31093, "batches": [{"date": "", "qty": 31093, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "食器皂 (補)  瓶身*1", "barcode": "D02-002", "stock": 100, "batches": [{"date": "", "qty": 100, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "食器皂 (補)  蓋子*1", "barcode": "D02-003", "stock": 2052, "batches": [{"date": "", "qty": 2052, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "食器皂 (補)  瓶貼*1", "barcode": "D02-004", "stock": 1922, "batches": [{"date": "", "qty": 100, "loc": "生華隆"}, {"date": "", "qty": 1822, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "食器皂50ml 瓶貼*1", "barcode": "D03-004", "stock": 2082, "batches": [{"date": "", "qty": 82, "loc": "生華隆"}, {"date": "", "qty": 2000, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精(共用)  認證貼紙*1", "barcode": "E00-006", "stock": 5036, "batches": [{"date": "", "qty": 2656, "loc": "公司庫"}, {"date": "", "qty": 2380, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "除垢慕斯 瓶身*1", "barcode": "E01-002", "stock": 1269, "batches": [{"date": "", "qty": 1269, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "除垢慕斯 噴頭*1", "barcode": "E01-003", "stock": 1281, "batches": [{"date": "", "qty": 46, "loc": "公司庫"}, {"date": "", "qty": 1235, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "除垢慕斯 瓶貼*1", "barcode": "E01-004", "stock": 1269, "batches": [{"date": "", "qty": 1269, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "家事皂 瓶身*1", "barcode": "E02-002", "stock": 8651, "batches": [{"date": "", "qty": 8651, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "家事皂 壓頭*1", "barcode": "E02-003", "stock": 3578, "batches": [{"date": "", "qty": 25, "loc": "公司庫"}, {"date": "", "qty": 3553, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "家事皂 瓶貼*1", "barcode": "E02-004", "stock": 24538, "batches": [{"date": "", "qty": 8651, "loc": "生華隆"}, {"date": "", "qty": 15887, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "家事皂分裝瓶 瓶身*1", "barcode": "E03-002", "stock": 20140, "batches": [{"date": "", "qty": 20140, "loc": "勝至"}], "first_expiry": null}, {"category": "物料", "name": "家事皂分裝瓶 噴頭*1", "barcode": "E03-003", "stock": 29544, "batches": [{"date": "2999/12/31", "qty": 29544, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "洗衣精 壓頭*1", "barcode": "E04-003", "stock": 1890, "batches": [{"date": "", "qty": 1890, "loc": "公司庫"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精 蓋子*1", "barcode": "E05-003", "stock": 23750, "batches": [{"date": "", "qty": 23750, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精 膠膜(補充瓶)*1", "barcode": "E05-004", "stock": 34201, "batches": [{"date": "", "qty": 4288, "loc": "生華隆"}, {"date": "", "qty": 29913, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精30ML 瓶身*1", "barcode": "E06-002", "stock": 998, "batches": [{"date": "", "qty": 998, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精30ML蓋子*1", "barcode": "E06-003", "stock": 998, "batches": [{"date": "", "qty": 998, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精瓶貼(迷你瓶)*1", "barcode": "E06-004", "stock": 167, "batches": [{"date": "", "qty": 167, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精 30ml 吊掛盒*1", "barcode": "E06-008", "stock": 3272, "batches": [{"date": "", "qty": 282, "loc": "生華隆"}, {"date": "", "qty": 2990, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "除垢慕斯(補充) 瓶身*1", "barcode": "E07-002", "stock": 30, "batches": [{"date": "", "qty": 30, "loc": "優捷"}], "first_expiry": null}, {"category": "物料", "name": "除垢慕斯(補充) 蓋子*1", "barcode": "E07-003", "stock": 206, "batches": [{"date": "", "qty": 178, "loc": "生華隆"}, {"date": "", "qty": 28, "loc": "優捷"}], "first_expiry": null}, {"category": "物料", "name": "除垢慕斯(補充) 瓶貼*1", "barcode": "E07-004", "stock": 283, "batches": [{"date": "", "qty": 211, "loc": "翔安"}, {"date": "", "qty": 72, "loc": "優捷"}], "first_expiry": null}, {"category": "物料", "name": "除黴凝膠 瓶身*1", "barcode": "E08-002", "stock": 10002, "batches": [{"date": "", "qty": 10002, "loc": "沛進"}], "first_expiry": null}, {"category": "物料", "name": "除黴凝膠 蓋子*1", "barcode": "E08-003", "stock": 10808, "batches": [{"date": "", "qty": 606, "loc": "公司庫"}, {"date": "", "qty": 10202, "loc": "沛進"}], "first_expiry": null}, {"category": "物料", "name": "除黴凝膠 瓶貼*1", "barcode": "E08-004", "stock": 11312, "batches": [{"date": "", "qty": 11312, "loc": "沛進"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精10ML (隨身包) 內料*1", "barcode": "E09-001", "stock": 1500, "batches": [{"date": "", "qty": 1500, "loc": "貝利兒"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精(隨身包) 鋁袋*1", "barcode": "E09-002", "stock": 39900, "batches": [{"date": "", "qty": 39900, "loc": "貝利兒"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精瓶貼(黃金甲聯名 迷你瓶)*1", "barcode": "E11-004", "stock": 200, "batches": [{"date": "", "qty": 200, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "洗衣精30ML 黃金甲聯名 紙卡*1", "barcode": "E11-005", "stock": 500, "batches": [{"date": "", "qty": 500, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "除垢噴槍 OPP袋*1", "barcode": "E12-006", "stock": 10600, "batches": [{"date": "2999/12/31", "qty": 10600, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "洗衣精壓頭 OPP袋*1", "barcode": "E13-006", "stock": 17121, "batches": [{"date": "2999/12/31", "qty": 17121, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "洗衣精 膠膜(黃金甲聯名 壓頭版)*1", "barcode": "E14-004", "stock": 932, "batches": [{"date": "", "qty": 932, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "綠玫瑰 EN0509 (mL)", "barcode": "EN0509", "stock": 121400, "batches": [{"date": "", "qty": 121400, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "護敏無泡潔顏露 150ml 瓶身*1", "barcode": "I01-002", "stock": 5030, "batches": [{"date": "", "qty": 5030, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "護敏無泡潔顏露 150ml 壓頭*1", "barcode": "I01-003", "stock": 4992, "batches": [{"date": "", "qty": 4992, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "護敏無泡潔顏露 150ml 瓶貼*1", "barcode": "I01-004", "stock": 7345, "batches": [{"date": "", "qty": 1118, "loc": "公司庫"}, {"date": "", "qty": 6227, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "護敏無泡潔顏露 150ml 紙盒*1", "barcode": "I01-005", "stock": 5291, "batches": [{"date": "", "qty": 5291, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "護敏無泡潔顏露 20ml 軟管包材*1", "barcode": "I02-002", "stock": 3204, "batches": [{"date": "", "qty": 3204, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "護敏無泡潔顏露 20ml 吊掛盒*1", "barcode": "I02-008", "stock": 7013, "batches": [{"date": "", "qty": 3600, "loc": "公司庫"}, {"date": "", "qty": 3413, "loc": "凱悅"}], "first_expiry": null}, {"category": "物料", "name": "溫和潔顏慕斯 150ml 瓶身*1", "barcode": "I03-002", "stock": 10000, "batches": [{"date": "", "qty": 10000, "loc": "群英"}], "first_expiry": null}, {"category": "物料", "name": "溫和潔顏慕斯 150ml 泡沫壓頭*1", "barcode": "I03-003", "stock": 10000, "batches": [{"date": "", "qty": 10000, "loc": "群英"}], "first_expiry": null}, {"category": "物料", "name": "溫和潔顏慕斯 150ml 瓶貼*1", "barcode": "I03-004", "stock": 11282, "batches": [{"date": "", "qty": 1102, "loc": "翔安"}, {"date": "", "qty": 10180, "loc": "群英"}], "first_expiry": null}, {"category": "物料", "name": "溫和潔顏慕斯 150ml 紙盒*1", "barcode": "I03-005", "stock": 11198, "batches": [{"date": "", "qty": 6198, "loc": "生華隆"}, {"date": "", "qty": 5000, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "溫和潔顏慕斯 30ml 瓶貼*1", "barcode": "I04-004", "stock": 3044, "batches": [{"date": "", "qty": 3044, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "溫和潔顏慕斯 30ml 吊掛盒*1", "barcode": "I04-008", "stock": 2356, "batches": [{"date": "", "qty": 2356, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "深層潔顏乳 120ml 紙盒*1", "barcode": "I05-005", "stock": 398, "batches": [{"date": "", "qty": 398, "loc": "研一"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)薄荷牙膏 軟管包材*1", "barcode": "J01-002", "stock": 10744, "batches": [{"date": "", "qty": 744, "loc": "虹均"}, {"date": "", "qty": 10000, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)薄荷牙膏 紙盒*1", "barcode": "J01-005", "stock": 11250, "batches": [{"date": "", "qty": 1250, "loc": "虹均"}, {"date": "", "qty": 10000, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(無氟)薄荷牙膏 紙盒*1", "barcode": "J02-005", "stock": 25, "batches": [{"date": "", "qty": 25, "loc": "虹均"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)草莓牙膏 軟管包材*1", "barcode": "J03-002", "stock": 64, "batches": [{"date": "", "qty": 64, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)草莓牙膏 紙盒*1", "barcode": "J03-005", "stock": 19, "batches": [{"date": "", "qty": 19, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(無氟)草莓牙膏 軟管包材*1", "barcode": "J04-002", "stock": 98, "batches": [{"date": "", "qty": 98, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(無氟)草莓牙膏 紙盒*1", "barcode": "J04-005", "stock": 83, "batches": [{"date": "", "qty": 83, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)葡萄牙膏 紙盒*1", "barcode": "J05-005", "stock": 47, "batches": [{"date": "", "qty": 47, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(無氟)葡萄牙膏 軟管包材*1", "barcode": "J06-002", "stock": 67, "batches": [{"date": "", "qty": 67, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(無氟)葡萄牙膏 紙盒*1", "barcode": "J06-005", "stock": 39, "batches": [{"date": "", "qty": 39, "loc": "宥盛"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)薄荷20g 軟管包材*1", "barcode": "J07-002", "stock": 6909, "batches": [{"date": "", "qty": 6909, "loc": "虹均"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(含氟)薄荷20g 吊掛盒*1", "barcode": "J07-005", "stock": 5837, "batches": [{"date": "", "qty": 5837, "loc": "虹均"}], "first_expiry": null}, {"category": "物料", "name": "【升級版】(無氟)薄荷20g 吊掛盒*1", "barcode": "J08-005", "stock": 8, "batches": [{"date": "", "qty": 8, "loc": "虹均"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 600ml 泡沫壓頭*1", "barcode": "K00-003", "stock": 45182, "batches": [{"date": "2999/12/31", "qty": 44505, "loc": "外包"}, {"date": "", "qty": 71, "loc": "公司庫"}, {"date": "", "qty": 606, "loc": "生華隆"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴慕斯棉花/花香 潔顏慕斯  肌膚貼紙*1", "barcode": "K00-006", "stock": 3385, "batches": [{"date": "", "qty": 1135, "loc": "生華隆"}, {"date": "", "qty": 2250, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 純淨無香600ml 瓶貼*1", "barcode": "K01-004", "stock": 2976, "batches": [{"date": "", "qty": 2976, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 純淨無香600ml 紙盒*1", "barcode": "K01-005", "stock": 764, "batches": [{"date": "2999/12/31", "qty": 518, "loc": "外包"}, {"date": "", "qty": 246, "loc": "生華隆"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴慕斯 純淨無香600ml 肌膚貼紙*1", "barcode": "K01-006", "stock": 8000, "batches": [{"date": "", "qty": 2300, "loc": "公司庫"}, {"date": "", "qty": 5700, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 日光棉花600ml 瓶身*1", "barcode": "K02-002", "stock": 1485, "batches": [{"date": "2999/12/31", "qty": 1440, "loc": "外包"}, {"date": "", "qty": 45, "loc": "生華隆"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴慕斯 日光棉花600ml 瓶貼*1", "barcode": "K02-004", "stock": 45, "batches": [{"date": "", "qty": 45, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 日光棉花600ml 紙盒*1", "barcode": "K02-005", "stock": 531, "batches": [{"date": "", "qty": 531, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 日光棉花50ml 瓶貼*1", "barcode": "K03-004", "stock": 2500, "batches": [{"date": "", "qty": 2500, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 日光棉花50ml 吊掛盒*1", "barcode": "K03-008", "stock": 216, "batches": [{"date": "", "qty": 132, "loc": "公司庫"}, {"date": "", "qty": 84, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 療癒花語600ml 瓶貼*1", "barcode": "K04-004", "stock": 423, "batches": [{"date": "", "qty": 423, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 療癒花語600ml 紙盒*1", "barcode": "K04-005", "stock": 1850, "batches": [{"date": "2999/12/31", "qty": 1500, "loc": "外包"}, {"date": "", "qty": 350, "loc": "生華隆"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴慕斯 療癒花語50ml 瓶貼*1", "barcode": "K05-004", "stock": 5800, "batches": [{"date": "", "qty": 800, "loc": "生華隆"}, {"date": "", "qty": 5000, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "沐浴慕斯 療癒花語50ml 吊掛盒*1", "barcode": "K05-008", "stock": 5185, "batches": [{"date": "", "qty": 55, "loc": "公司庫"}, {"date": "", "qty": 130, "loc": "生華隆"}, {"date": "", "qty": 5000, "loc": "柏朗克"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露500ml 壓頭*1", "barcode": "L00-003", "stock": 7995, "batches": [{"date": "2999/12/31", "qty": 7995, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴露(共用)  500ml 肌膚貼紙*1", "barcode": "L00-006", "stock": 2997, "batches": [{"date": "2999/12/31", "qty": 2997, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴露 日光棉花500ml 瓶身*1", "barcode": "L01-002", "stock": 90, "batches": [{"date": "", "qty": 90, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 日光棉花500ml 瓶貼*1", "barcode": "L01-004", "stock": 14539, "batches": [{"date": "", "qty": 90, "loc": "生華隆"}, {"date": "", "qty": 14449, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 日光棉花30ml 瓶貼*1", "barcode": "L02-004", "stock": 1000, "batches": [{"date": "", "qty": 1000, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 日光棉花30ml 吊掛盒*1", "barcode": "L02-008", "stock": 955, "batches": [{"date": "", "qty": 955, "loc": "公司庫"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 療癒花語500ml 瓶身*1", "barcode": "L03-002", "stock": 50, "batches": [{"date": "", "qty": 50, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 療癒花語500ml 瓶貼*1", "barcode": "L03-004", "stock": 18458, "batches": [{"date": "", "qty": 50, "loc": "生華隆"}, {"date": "", "qty": 18408, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 療癒花語500ml 紙盒*1", "barcode": "L03-005", "stock": 7885, "batches": [{"date": "2999/12/31", "qty": 7885, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴露 療癒花語30ml 瓶身*1", "barcode": "L04-002", "stock": 4950, "batches": [{"date": "2999/12/31", "qty": 4950, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴露 療癒花語30ml 壓頭*1", "barcode": "L04-003", "stock": 5030, "batches": [{"date": "2999/12/31", "qty": 5030, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "沐浴露 療癒花語30ml 瓶貼*1", "barcode": "L04-004", "stock": 600, "batches": [{"date": "", "qty": 600, "loc": "翔安"}], "first_expiry": null}, {"category": "物料", "name": "沐浴露 療癒花語30ml 吊掛盒*1", "barcode": "L04-008", "stock": 5502, "batches": [{"date": "2999/12/31", "qty": 5050, "loc": "外包"}, {"date": "", "qty": 452, "loc": "公司庫"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "植潤水凝乳 (花香) 300ML 壓頭+瓶身*1", "barcode": "M01-002", "stock": 4938, "batches": [{"date": "", "qty": 4938, "loc": "佐見啦"}], "first_expiry": null}, {"category": "物料", "name": "植潤水凝乳 (花香) 300ML 瓶貼*1", "barcode": "M01-004", "stock": 5434, "batches": [{"date": "", "qty": 5434, "loc": "佐見啦"}], "first_expiry": null}, {"category": "物料", "name": "植潤水凝乳 (花香) 300ML 紙盒*1", "barcode": "M01-005", "stock": 5857, "batches": [{"date": "", "qty": 5857, "loc": "佐見啦"}], "first_expiry": null}, {"category": "物料", "name": "自然露珠 NATURE DEW NO.36 (mL)", "barcode": "ND-N0.36", "stock": 79370, "batches": [{"date": "", "qty": 79370, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "白夏菊萃取 SEA MAYWEED SC (mL)", "barcode": "SM-SC", "stock": 3510, "batches": [{"date": "", "qty": 3510, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "(法台) 棉花香精 37816 (mL)", "barcode": "TN37816", "stock": 45500, "batches": [{"date": "", "qty": 45500, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "白茶 TN84303 TEA WHITE SG (mL)", "barcode": "TN84303", "stock": 79200, "batches": [{"date": "", "qty": 79200, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "棉花 TR220 (mL)", "barcode": "TR220", "stock": 721300, "batches": [{"date": "", "qty": 721300, "loc": "生華隆"}], "first_expiry": null}, {"category": "物料", "name": "30ML 噴頭(共用)", "barcode": "TT039", "stock": 17426, "batches": [{"date": "2999/12/31", "qty": 17426, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "物料", "name": "300ML 居家瓶身", "barcode": "TT042", "stock": 48, "batches": [{"date": "", "qty": 48, "loc": "公司庫"}], "first_expiry": null}, {"category": "美兆成品", "name": "美兆生活-挪威頂級魚油(60顆)", "barcode": "4713233985063", "stock": 720, "batches": [{"date": "", "qty": 720, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-魚油60顆 瓶貼*1", "barcode": "ZA01-004", "stock": 22200, "batches": [{"date": "", "qty": 22200, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-魚油60顆 紙盒*1", "barcode": "ZA01-005", "stock": 22276, "batches": [{"date": "", "qty": 22276, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-魚油20顆 背膜捲*1", "barcode": "ZA02-004", "stock": 91710, "batches": [{"date": "", "qty": 91710, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-魚油20顆 紙盒*1", "barcode": "ZA02-005", "stock": 5529, "batches": [{"date": "", "qty": 5529, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-冰晶膠原 鋁捲*1", "barcode": "ZA04-004", "stock": 108600, "batches": [{"date": "", "qty": 108600, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-柑橘高濃度緩釋C 瓶貼*1", "barcode": "ZA06-004", "stock": 5690, "batches": [{"date": "", "qty": 5690, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-極致穀胱甘肽GSH 瓶貼*1", "barcode": "ZA07-004", "stock": 4490, "batches": [{"date": "", "qty": 4490, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-極致穀胱甘肽GSH 紙盒*1", "barcode": "ZA07-005", "stock": 3647, "batches": [{"date": "", "qty": 3647, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-甦活雙效B群 瓶貼*1", "barcode": "ZA09-004", "stock": 5690, "batches": [{"date": "", "qty": 5690, "loc": "百禎"}], "first_expiry": null}, {"category": "阿清物料", "name": "阿清-蔓越莓 鋁捲*1", "barcode": "ZA10-004", "stock": 330900, "batches": [{"date": "", "qty": 330900, "loc": "百禎"}], "first_expiry": null}, {"category": "美兆物料", "name": "美兆-魚油60顆 紙盒*1", "barcode": "ZB01-005", "stock": 260, "batches": [{"date": "", "qty": 260, "loc": "百禎"}], "first_expiry": null}, {"category": "美兆物料", "name": "美兆-喚采冰晶膠原C 鋁捲*1", "barcode": "ZB02-004", "stock": 382800, "batches": [{"date": "", "qty": 382800, "loc": "百禎"}], "first_expiry": null}, {"category": "美兆物料", "name": "美兆-喚采冰晶膠原C 紙盒*1", "barcode": "ZB02-005", "stock": 1290, "batches": [{"date": "", "qty": 1290, "loc": "百禎"}], "first_expiry": null}];
+
+const TODAY     = new Date('2026-04-10');
+const STAFF_INCLUDE = ['居家清潔','肌膚滋養','潔顏系列','口腔呵護','濕紙巾系列','精油系列','阿清'];
+const MGR_EX        = ['歷史產品', '歷史贈品'];
+const OEM_CATS      = ['美兆成品','阿清物料','美兆物料'];
+function groupOf(cat){ return OEM_CATS.includes(cat) ? 'oem' : 'jj'; }
+
+function daysDiff(dateStr){
+  if(!dateStr) return null;
+  const [y,m,d] = dateStr.split('/').map(Number);
+  return Math.floor((new Date(y,m-1,d) - TODAY) / 86400000);
+}
+function expClass(first_expiry){
+  const days = daysDiff(first_expiry);
+  if(days===null) return 'none';
+  if(days<=180)  return 'urgent';
+  if(days<=365)  return 'warn';
+  return 'ok';
+}
+function batchCls(dateStr){
+  const days = daysDiff(dateStr);
+  if(days===null) return 'exp-none';
+  if(days<=180)  return 'exp-urgent';
+  if(days<=365)  return 'exp-warn';
+  return 'exp-ok';
+}
+
+const mgrData   = DATA.filter(d=>!MGR_EX.includes(d.category));
+const staffData = DATA.filter(d=>STAFF_INCLUDE.includes(d.category));
+
+const state = {
+  m:{ cats:[], group:'', loc:'', showAll:false, sortCol:'', sortDir:1, expFilter:'', picks:new Set(), pickOnly:false },
+  s:{ cats:[], showAll:false, sortCol:'', sortDir:1, expFilter:'', picks:new Set(), pickOnly:false }
+};
+function togglePick(px, barcode){
+  const p = state[px].picks;
+  if(p.has(barcode)) p.delete(barcode); else p.add(barcode);
+  updatePickUI(px); render(px);
+}
+function clearPicks(px){
+  state[px].picks.clear(); state[px].pickOnly = false;
+  updatePickUI(px); render(px);
+}
+function togglePickOnly(px){
+  state[px].pickOnly = !state[px].pickOnly;
+  updatePickUI(px); render(px);
+}
+function togglePickAll(px){
+  const cb = document.getElementById(px+'-pickall');
+  const visible = getFiltered(px);
+  if(cb.checked) visible.forEach(d=>state[px].picks.add(d.barcode));
+  else visible.forEach(d=>state[px].picks.delete(d.barcode));
+  updatePickUI(px); render(px);
+}
+function updatePickUI(px){
+  const n = state[px].picks.size;
+  const row = document.getElementById(px+'-pickrow');
+  const count = document.getElementById(px+'-pickcount');
+  const btn = document.getElementById(px+'-pickonlybtn');
+  if(row) row.style.display = n>0 ? 'flex' : 'none';
+  if(count) count.textContent = n + ' 項';
+  if(btn){
+    if(state[px].pickOnly){
+      btn.textContent = '👁 顯示全部';
+      btn.style.background = '#1E40AF'; btn.style.color = '#fff';
+    } else {
+      btn.textContent = '👁 只看已勾選';
+      btn.style.background = '#fff'; btn.style.color = '#1E40AF';
+    }
+  }
+}
+
+// 判斷是否為「不良品」類倉庫（不計入正常總表）
+function isDefectLoc(loc){
+  if(!loc) return false;
+  return loc.indexOf('不良') >= 0;
+}
+
+// Build 倉別 dropdown options from data
+(function buildLocOptions(){
+  const sel = document.getElementById('m-loc');
+  if(!sel) return;
+  const locs = new Set();
+  let hasDefect = false;
+  mgrData.forEach(d => (d.batches||[]).forEach(b => {
+    if(!b.loc) return;
+    if(isDefectLoc(b.loc)) hasDefect = true;
+    else locs.add(b.loc);
+  }));
+  const order = ['外包','公司庫','外包庫'];
+  const sorted = [...locs].sort((a,b)=>{
+    const ai = order.indexOf(a), bi = order.indexOf(b);
+    if(ai>=0 && bi>=0) return ai-bi;
+    if(ai>=0) return -1;
+    if(bi>=0) return 1;
+    return a.localeCompare(b,'zh-TW');
+  });
+  sorted.forEach(loc=>{
+    const o = document.createElement('option');
+    o.value = loc; o.textContent = loc;
+    sel.appendChild(o);
+  });
+  if(hasDefect){
+    const o = document.createElement('option');
+    o.value = '__defect__'; o.textContent = '不良品倉';
+    sel.appendChild(o);
+  }
+})();
+function selectLoc(loc){
+  state.m.loc = loc;
+  render('m');
+}
+
+// Build category buttons
+function buildCats(px, items){
+  const cats = [...new Set(items.map(d=>d.category))];
+  const row  = document.getElementById(px+'-catrow');
+  cats.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className='cat-btn'; btn.dataset.cat=cat; btn.textContent=cat;
+    if(px==='m') btn.dataset.group = groupOf(cat);
+    btn.onclick=()=>selectCat(px,cat);
+    row.appendChild(btn);
+  });
+}
+function selectGroup(px, g){
+  state[px].group = g;
+  state[px].cats = [];
+  document.querySelectorAll('#'+px+'-grouprow .cat-btn').forEach(b=>b.classList.toggle('active', b.dataset.group===g));
+  document.querySelectorAll('#'+px+'-catrow .cat-btn').forEach(b=>{
+    const bg = b.dataset.group;
+    const isAll = b.dataset.cat==='';
+    b.style.display = (g==='' || isAll || bg===g) ? '' : 'none';
+    b.classList.toggle('active', isAll);
+  });
+  render(px);
+}
+buildCats('m', mgrData);
+buildCats('s', staffData);
+
+function src(px){ return px==='m' ? mgrData : staffData; }
+
+function selectCat(px,cat){
+  const s = state[px];
+  if(cat===''){
+    // 「全部」按鈕 → 清空多選
+    s.cats = [];
+  } else {
+    const idx = s.cats.indexOf(cat);
+    if(idx>=0) s.cats.splice(idx,1);
+    else s.cats.push(cat);
+  }
+  document.querySelectorAll('#'+px+'-catrow .cat-btn').forEach(b=>{
+    const c = b.dataset.cat;
+    if(c==='') b.classList.toggle('active', s.cats.length===0);
+    else       b.classList.toggle('active', s.cats.includes(c));
+  });
+  render(px);
+}
+function setShowAll(px,val){
+  state[px].showAll=val;
+  document.getElementById(px+'-btn1').classList.toggle('active',!val);
+  document.getElementById(px+'-btn2').classList.toggle('active',val);
+  render(px);
+}
+function sortBy(px,col){
+  const s=state[px];
+  if(s.sortCol===col) s.sortDir=-s.sortDir; else{s.sortCol=col;s.sortDir=1;}
+  render(px);
+}
+
+/* ── Expiry filter ── */
+function toggleExpFilter(px, level){
+  const s = state[px];
+  s.expFilter = (s.expFilter===level) ? '' : level;
+  // if activating filter, auto-show all stock
+  if(s.expFilter) s.showAll = true;
+  updateExpFilterUI(px);
+  render(px);
+}
+function clearExpFilter(px){
+  state[px].expFilter='';
+  updateExpFilterUI(px);
+  render(px);
+}
+function updateExpFilterUI(px){
+  const f = state[px].expFilter;
+  ['urgent','warn'].forEach(lvl=>{
+    const chip   = document.getElementById(px+'-chip-'+lvl);
+    const banner = document.getElementById(px+'-banner-'+lvl);
+    chip.classList.toggle('chip-active', f===lvl);
+    banner.classList.toggle('active', f===lvl);
+  });
+}
+
+function getFiltered(px){
+  const s=state[px];
+  const q=document.getElementById(px+'-search').value.trim().toLowerCase();
+  return src(px).filter(d=>{
+    // 選擇「不良品倉」時不以主庫存判斷
+    if(!(px==='m' && s.loc==='__defect__') && d.stock===0) return false;
+    if(px==='m' && s.group){
+      if(groupOf(d.category)!==s.group) return false;
+    }
+    if(px==='m' && s.loc){
+      const has = (d.batches||[]).some(b=>{
+        if((b.qty||0)<=0) return false;
+        if(s.loc==='__defect__') return isDefectLoc(b.loc);
+        return b.loc===s.loc;
+      });
+      if(!has) return false;
+    }
+    if(px==='s'){
+      const omsStock=(d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+      const coStock =(d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0);
+      const effStock = d.category==='阿清' ? coStock : omsStock;
+      if(effStock===0) return false;
+    }
+    if(s.cats && s.cats.length>0 && !s.cats.includes(d.category)) return false;
+    if(s.pickOnly && s.picks && s.picks.size>0 && !s.picks.has(d.barcode)) return false;
+    if(s._lowStockFilter){
+      if(d.stock > 50) return false;
+    }
+    if(s.expFilter){
+      const omsBatches = px==='s'
+        ? (d.batches||[]).filter(b=> d.category==='阿清' ? b.loc==='公司庫' : b.loc==='外包')
+        : (d.batches||[]);
+      const hasLevel = omsBatches.some(b=>batchCls(b.date)==='exp-'+s.expFilter);
+      if(!hasLevel) return false;
+    }
+    if(q) return d.name.toLowerCase().includes(q)||(px==='m'&&d.barcode.includes(q))||d.category.includes(q);
+    return true;
+  });
+}
+
+function renderBatches(batches, highlightLevel){
+  if(!batches||!batches.length) return '<span style="color:#cbd5e1;font-size:.75rem">—</span>';
+  return '<div class="batch-list">'+batches.map(b=>{
+    const cls = batchCls(b.date);
+    const ring = highlightLevel && cls==='exp-'+highlightLevel ? 'outline:2px solid currentColor;outline-offset:1px;' : '';
+    return `<div class="batch-row">
+      <span class="batch-date ${cls}" style="${ring}">${b.date}</span>
+      <span class="batch-qty">× ${b.qty.toLocaleString()} 件</span>
+      <span class="batch-loc">${b.loc}</span>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function nearestOmsExpiry(batches){
+  if(!batches||!batches.length) return null;
+  const valid = batches
+    .filter(b=>b.date && b.loc==='外包')
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  return valid.length ? valid[0] : null;
+}
+function nearestExpiry(batches, excludeLoc){
+  if(!batches||!batches.length) return null;
+  const valid = batches
+    .filter(b=>b.date && (!excludeLoc || b.loc!==excludeLoc))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  return valid.length ? valid[0] : null;
+}
+
+function render(px){
+  let items = getFiltered(px);
+  const s   = state[px];
+  if(s.sortCol){
+    items.sort((a,b)=>{
+      if(s.sortCol==='stock') return (a.stock-b.stock)*s.sortDir;
+      return String(a[s.sortCol]).localeCompare(String(b[s.sortCol]),'zh-TW')*s.sortDir;
+    });
+  }
+  document.getElementById(px+'-count').textContent=`顯示 ${items.length} 項商品`;
+
+  if(px==='m'){
+    const groupBase = s.group ? mgrData.filter(d=>groupOf(d.category)===s.group) : mgrData;
+    const inStock = groupBase.filter(d=>d.stock>0);
+    document.getElementById('m-total').textContent  = groupBase.length;
+    document.getElementById('m-stock').textContent  = inStock.length;
+    document.getElementById('m-urgent').textContent = inStock.filter(d=>(d.batches||[]).some(b=>batchCls(b.date)==='exp-urgent')).length;
+    document.getElementById('m-warn').textContent   = inStock.filter(d=>(d.batches||[]).some(b=>batchCls(b.date)==='exp-warn')).length;
+
+    document.getElementById('m-tbody').innerHTML = items.length===0
+      ? '<tr><td colspan="6" class="no-results">找不到符合條件的商品</td></tr>'
+      : items.map(d=>{
+          const goodBatches = (d.batches||[]).filter(b=>{
+            if(s.loc==='__defect__') return isDefectLoc(b.loc);
+            if(isDefectLoc(b.loc)) return false;
+            return !s.loc || b.loc===s.loc;
+          });
+          const goodStock = goodBatches.reduce((a,b)=>a+b.qty,0);
+          const sc = goodStock===0?'stock-zero':goodStock<50?'stock-low':'stock-ok';
+          const rowCls = goodBatches.some(b=>batchCls(b.date)==='exp-urgent') ? 'row-urgent'
+                       : goodBatches.some(b=>batchCls(b.date)==='exp-warn')   ? 'row-warn' : '';
+          const picked = state.m.picks.has(d.barcode);
+          const pickStyle = picked ? 'background:#EFF6FF;' : '';
+          return `<tr class="${rowCls}" style="${pickStyle}">
+            <td style="text-align:center;"><input type="checkbox" ${picked?'checked':''} onclick="togglePick('m','${d.barcode}')"></td>
+            <td><span class="cat-badge">${d.category}</span></td>
+            <td class="barcode-cell">${d.barcode}</td>
+            <td class="name-cell">${d.name}</td>
+            <td class="stock-cell"><span class="stock-num ${sc}">${goodStock.toLocaleString()}</span></td>
+            <td>${renderBatches(goodBatches, s.expFilter)}</td>
+          </tr>`;
+        }).join('');
+    const mPickAll = document.getElementById('m-pickall');
+    if(mPickAll){ mPickAll.checked = items.length>0 && items.every(d=>state.m.picks.has(d.barcode)); }
+    updatePickUI('m');
+
+    // Defective warehouse table
+    const defectItems = groupBase
+      .map(d=>{
+        const dbs = (d.batches||[]).filter(b=>isDefectLoc(b.loc));
+        const qty = dbs.reduce((a,b)=>a+b.qty,0);
+        return qty>0 ? {d, dbs, qty} : null;
+      })
+      .filter(Boolean)
+      .sort((a,b)=>b.qty-a.qty);
+    document.getElementById('m-defect-count').textContent = `（共 ${defectItems.length} 項）`;
+    document.getElementById('m-defect-tbody').innerHTML = defectItems.length===0
+      ? '<tr><td colspan="5" class="no-results">目前沒有不良品倉庫存</td></tr>'
+      : defectItems.map(({d,dbs,qty})=>{
+          const detail = dbs.map(b=>`${b.loc}：${b.qty.toLocaleString()}${b.date?'（'+b.date+'）':''}`).join('　');
+          return `<tr>
+            <td><span class="cat-badge">${d.category}</span></td>
+            <td class="barcode-cell">${d.barcode}</td>
+            <td class="name-cell">${d.name}</td>
+            <td class="stock-cell"><span class="stock-num" style="color:#dc2626;">${qty.toLocaleString()}</span></td>
+            <td style="font-size:.76rem;color:var(--text-mid);">${detail}</td>
+          </tr>`;
+        }).join('');
+  } else {
+    const inStock = staffData.filter(d=>{
+      const oms=(d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+      const co =(d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0);
+      return d.category==='阿清' ? co>0 : oms>0;
+    });
+    document.getElementById('s-stock').textContent  = inStock.length;
+    document.getElementById('s-urgent').textContent = inStock.filter(d=>{
+      const src = d.category==='阿清' ? (d.batches||[]).filter(b=>b.loc==='公司庫') : (d.batches||[]).filter(b=>b.loc==='外包');
+      return src.some(b=>batchCls(b.date)==='exp-urgent');
+    }).length;
+    document.getElementById('s-warn').textContent   = inStock.filter(d=>{
+      const src = d.category==='阿清' ? (d.batches||[]).filter(b=>b.loc==='公司庫') : (d.batches||[]).filter(b=>b.loc==='外包');
+      return src.some(b=>batchCls(b.date)==='exp-warn');
+    }).length;
+
+    document.getElementById('s-tbody').innerHTML = items.length===0
+      ? '<tr><td colspan="6" class="no-results">找不到符合條件的商品</td></tr>'
+      : items.map(d=>{
+          const isAqing  = d.category==='阿清';
+          const omsStock = isAqing
+            ? (d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0)
+            : (d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+          const sc  = omsStock<50?'stock-low':'stock-ok';
+          const near = nearestOmsExpiry(d.batches);
+          const ec   = near ? expClass(near.date) : 'none';
+          // 6個月內 / 6-12個月：顯示最近效期 + 數量；其他只顯示最近效期
+          const expLabel = near
+            ? (ec==='urgent' || ec==='warn'
+                ? `<span class="exp-simple exp-${ec}">${near.date}　× ${near.qty.toLocaleString()} 件</span>`
+                : `<span class="exp-simple exp-${ec}">${near.date}</span>`)
+            : `<span class="exp-simple exp-none">—</span>`;
+          const rowCls = ec==='urgent' ? 'row-urgent' : ec==='warn' ? 'row-warn' : '';
+          const picked = state.s.picks.has(d.barcode);
+          const pickStyle = picked ? 'background:#EFF6FF;' : '';
+          return `<tr class="${rowCls}" style="${pickStyle}">
+            <td style="text-align:center;"><input type="checkbox" ${picked?'checked':''} onclick="togglePick('s','${d.barcode}')"></td>
+            <td><span class="cat-badge">${d.category}</span></td>
+            <td class="barcode-cell">${d.barcode}</td>
+            <td class="name-cell">${d.name}</td>
+            <td class="stock-cell"><span class="stock-num ${sc}">${omsStock.toLocaleString()}</span></td>
+            <td>${expLabel}</td>
+          </tr>`;
+        }).join('');
+    const sPickAll = document.getElementById('s-pickall');
+    if(sPickAll){ sPickAll.checked = items.length>0 && items.every(d=>state.s.picks.has(d.barcode)); }
+    updatePickUI('s');
+  }
+}
+
+
+const MGR_PW = 'nini0211';
+
+function enterView(role){
+  if(role==='manager'){
+    showPwModal();
+  } else {
+    doEnterView(role);
+  }
+}
+function showPwModal(){
+  document.getElementById('pwOverlay').classList.add('active');
+  document.getElementById('pwInput').value='';
+  document.getElementById('pwErr').textContent='';
+  document.getElementById('pwInput').classList.remove('error');
+  setTimeout(()=>document.getElementById('pwInput').focus(),100);
+}
+function closePwModal(){
+  document.getElementById('pwOverlay').classList.remove('active');
+}
+function togglePwVis(){
+  const inp = document.getElementById('pwInput');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+function checkPw(){
+  const val = document.getElementById('pwInput').value;
+  if(val === MGR_PW){
+    closePwModal();
+    doEnterView('manager');
+  } else {
+    const inp = document.getElementById('pwInput');
+    inp.classList.add('error');
+    document.getElementById('pwErr').textContent='密碼錯誤，請再試一次';
+    inp.value='';
+    setTimeout(()=>inp.classList.remove('error'),400);
+  }
+}
+function doEnterView(role){
+  // 清除首頁跳轉的特殊篩選（statJump 會在之後重新設定）
+  state.s._lowStockFilter = false;
+  state.s.expFilter = '';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  let id, cb;
+  if(role==='manager'){ id='managerScreen'; cb=()=>render('m'); }
+  else if(role==='staff'){ id='staffScreen'; cb=()=>render('s'); }
+  else if(role==='store'){ id='storeScreen'; cb=renderStore; }
+  else if(role==='vendor'){ id='vendorScreen'; cb=renderVendor; }
+  document.getElementById(id).classList.add('active');
+  cb();
+  window.scrollTo(0,0);
+}
+
+
+/* ===== STORE (百貨店面) ===== */
+const STORES_DATA = [{"category": "居家清潔", "name": "淨淨剋菌液 10倍濃縮 500ml", "barcode": "4713233981553", "stock": 30, "stores": [{"loc": "竹南門市", "qty": 5}, {"loc": "台中lalaport", "qty": 2}, {"loc": "台南南紡", "qty": 23}]}, {"category": "居家清潔", "name": "淨淨剋菌液 居家瓶 300ml", "barcode": "4713233981621", "stock": 96, "stores": [{"loc": "竹南門市", "qty": 4}, {"loc": "台中lalaport", "qty": 38}, {"loc": "台南南紡", "qty": 54}]}, {"category": "居家清潔", "name": "淨淨剋菌液 隨身瓶 100ml", "barcode": "4713233986664", "stock": 118, "stores": [{"loc": "竹南門市", "qty": 22}, {"loc": "台中lalaport", "qty": 18}, {"loc": "台南南紡", "qty": 78}]}, {"category": "居家清潔", "name": "食器清潔皂 慕斯瓶 500ml", "barcode": "4713233981256", "stock": 171, "stores": [{"loc": "竹南門市", "qty": 40}, {"loc": "台中lalaport", "qty": 49}, {"loc": "台南南紡", "qty": 82}]}, {"category": "居家清潔", "name": "食器清潔皂 補充瓶 500ml", "barcode": "4713233981263", "stock": 124, "stores": [{"loc": "竹南門市", "qty": 62}, {"loc": "台南南紡", "qty": 62}]}, {"category": "居家清潔", "name": "食器清潔皂 隨身瓶 50ml", "barcode": "4713233982253", "stock": 56, "stores": [{"loc": "竹南門市", "qty": 17}, {"loc": "台中lalaport", "qty": 26}, {"loc": "台南南紡", "qty": 13}]}, {"category": "居家清潔", "name": "速效除垢慕斯 補充瓶 500ml", "barcode": "4713233981317", "stock": 77, "stores": [{"loc": "竹南門市", "qty": 50}, {"loc": "台南南紡", "qty": 27}]}, {"category": "居家清潔", "name": "速效除垢慕斯 新版【瓶蓋版】 500ml", "barcode": "4713233981294", "stock": 212, "stores": [{"loc": "台中lalaport", "qty": 91}, {"loc": "台南南紡", "qty": 121}]}, {"category": "居家清潔", "name": "速效除垢慕斯 噴槍(單獨)", "barcode": "E10", "stock": 235, "stores": [{"loc": "竹南門市", "qty": 36}, {"loc": "台中lalaport", "qty": 60}, {"loc": "台南南紡", "qty": 139}]}, {"category": "居家清潔", "name": "速效除黴凝膠 尖嘴瓶 150ml", "barcode": "4713233981539", "stock": 231, "stores": [{"loc": "竹南門市", "qty": 127}, {"loc": "台中lalaport", "qty": 53}, {"loc": "台南南紡", "qty": 51}]}, {"category": "居家清潔", "name": "濃縮家事皂 按壓瓶 700ml", "barcode": "4713233981324", "stock": 108, "stores": [{"loc": "竹南門市", "qty": 26}, {"loc": "台中lalaport", "qty": 37}, {"loc": "台南南紡", "qty": 45}]}, {"category": "居家清潔", "name": "專用小噴瓶 泡沫噴瓶 300ml", "barcode": "4713233983823", "stock": 132, "stores": [{"loc": "竹南門市", "qty": 35}, {"loc": "台中lalaport", "qty": 31}, {"loc": "台南南紡", "qty": 66}]}, {"category": "居家清潔", "name": "真濃縮洗衣精 標準瓶(第二版) 800ml", "barcode": "4713233981355", "stock": 121, "stores": [{"loc": "竹南門市", "qty": 44}, {"loc": "台中lalaport", "qty": 3}, {"loc": "台南南紡", "qty": 74}]}, {"category": "居家清潔", "name": "真濃縮洗衣精 補充罐(第二版) 800ml", "barcode": "4713233981362", "stock": 70, "stores": [{"loc": "竹南門市", "qty": 29}, {"loc": "台南南紡", "qty": 41}]}, {"category": "居家清潔", "name": "真濃縮洗衣精 新版(瓶蓋版) 800ml", "barcode": "4713233981447", "stock": 165, "stores": [{"loc": "竹南門市", "qty": 14}, {"loc": "台中lalaport", "qty": 83}, {"loc": "台南南紡", "qty": 68}]}, {"category": "居家清潔", "name": "真濃縮洗衣精 迷你瓶 30ml", "barcode": "4713233981379", "stock": 158, "stores": [{"loc": "竹南門市", "qty": 32}, {"loc": "台中lalaport", "qty": 81}, {"loc": "台南南紡", "qty": 45}]}, {"category": "居家清潔", "name": "真濃縮洗衣精 隨身包 10ml", "barcode": "4713233981430", "stock": 627, "stores": [{"loc": "竹南門市", "qty": 167}, {"loc": "台中lalaport", "qty": 460}]}, {"category": "居家清潔", "name": "真濃縮洗衣精 壓頭(單獨)", "barcode": "E13", "stock": 139, "stores": [{"loc": "竹南門市", "qty": 30}, {"loc": "台中lalaport", "qty": 53}, {"loc": "台南南紡", "qty": 56}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 純淨無香 600ml", "barcode": "4713233984622", "stock": 34, "stores": [{"loc": "竹南門市", "qty": 21}, {"loc": "台中lalaport", "qty": 10}, {"loc": "台南南紡", "qty": 3}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 日光棉花 600ml", "barcode": "4713233984639", "stock": 43, "stores": [{"loc": "竹南門市", "qty": 20}, {"loc": "台南南紡", "qty": 23}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 50ml", "barcode": "4713233984653", "stock": 353, "stores": [{"loc": "竹南門市", "qty": 30}, {"loc": "台中lalaport", "qty": 110}, {"loc": "台南南紡", "qty": 213}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 療癒花語 600ml", "barcode": "4713233984646", "stock": 53, "stores": [{"loc": "竹南門市", "qty": 17}, {"loc": "台南南紡", "qty": 36}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 50ml", "barcode": "4713233984660", "stock": 98, "stores": [{"loc": "竹南門市", "qty": 42}, {"loc": "台中lalaport", "qty": 35}, {"loc": "台南南紡", "qty": 21}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 日光棉花 500ml", "barcode": "4713233984677", "stock": 50, "stores": [{"loc": "竹南門市", "qty": 22}, {"loc": "台中lalaport", "qty": 14}, {"loc": "台南南紡", "qty": 14}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 30ml", "barcode": "4713233984691", "stock": 203, "stores": [{"loc": "竹南門市", "qty": 51}, {"loc": "台中lalaport", "qty": 55}, {"loc": "台南南紡", "qty": 97}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 8ml", "barcode": "4713233984752", "stock": 78, "stores": [{"loc": "竹南門市", "qty": 48}, {"loc": "台南南紡", "qty": 30}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 療癒花語 500ml", "barcode": "4713233984684", "stock": 56, "stores": [{"loc": "竹南門市", "qty": 22}, {"loc": "台中lalaport", "qty": 14}, {"loc": "台南南紡", "qty": 20}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 30ml", "barcode": "4713233984707", "stock": 211, "stores": [{"loc": "竹南門市", "qty": 41}, {"loc": "台中lalaport", "qty": 53}, {"loc": "台南南紡", "qty": 117}]}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 8ml", "barcode": "4713233984769", "stock": 180, "stores": [{"loc": "竹南門市", "qty": 50}, {"loc": "台中lalaport", "qty": 100}, {"loc": "台南南紡", "qty": 30}]}, {"category": "肌膚滋養", "name": "植潤．水凝乳 療癒花語 300ml", "barcode": "4713233984738", "stock": 76, "stores": [{"loc": "竹南門市", "qty": 16}, {"loc": "台中lalaport", "qty": 23}, {"loc": "台南南紡", "qty": 37}]}, {"category": "肌膚滋養", "name": "植潤．水凝乳 8ml", "barcode": "4713233984745", "stock": 989, "stores": [{"loc": "竹南門市", "qty": 293}, {"loc": "台中lalaport", "qty": 612}, {"loc": "台南南紡", "qty": 84}]}, {"category": "潔顏系列", "name": "護敏無泡潔顏露 標準瓶 150ml", "barcode": "4713233984509", "stock": 70, "stores": [{"loc": "竹南門市", "qty": 31}, {"loc": "台中lalaport", "qty": 10}, {"loc": "台南南紡", "qty": 29}]}, {"category": "潔顏系列", "name": "護敏無泡潔顏露 體驗瓶 20ml", "barcode": "4713233984516", "stock": 46, "stores": [{"loc": "竹南門市", "qty": 14}, {"loc": "台中lalaport", "qty": 11}, {"loc": "台南南紡", "qty": 21}]}, {"category": "潔顏系列", "name": "胺基酸溫和潔顏慕斯 標準瓶 150ml", "barcode": "4713233984523", "stock": 57, "stores": [{"loc": "竹南門市", "qty": 21}, {"loc": "台中lalaport", "qty": 2}, {"loc": "台南南紡", "qty": 34}]}, {"category": "潔顏系列", "name": "胺基酸溫和潔顏慕斯 體驗瓶 30ml", "barcode": "4713233984530", "stock": 312, "stores": [{"loc": "竹南門市", "qty": 25}, {"loc": "台中lalaport", "qty": 195}, {"loc": "台南南紡", "qty": 92}]}, {"category": "潔顏系列", "name": "胺基酸深層潔顏乳 標準瓶 120ml", "barcode": "4713233984547", "stock": 78, "stores": [{"loc": "竹南門市", "qty": 23}, {"loc": "台中lalaport", "qty": 28}, {"loc": "台南南紡", "qty": 27}]}, {"category": "潔顏系列", "name": "胺基酸深層潔顏乳 體驗瓶 20ml", "barcode": "4713233984554", "stock": 96, "stores": [{"loc": "竹南門市", "qty": 16}, {"loc": "台中lalaport", "qty": 49}, {"loc": "台南南紡", "qty": 31}]}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 薄荷 150g", "barcode": "4713233984561", "stock": 95, "stores": [{"loc": "竹南門市", "qty": 23}, {"loc": "台中lalaport", "qty": 27}, {"loc": "台南南紡", "qty": 45}]}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 20g", "barcode": "4713233984714", "stock": 106, "stores": [{"loc": "竹南門市", "qty": 30}, {"loc": "台中lalaport", "qty": 49}, {"loc": "台南南紡", "qty": 27}]}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 薄荷(無氟) 150g", "barcode": "4713233984578", "stock": 78, "stores": [{"loc": "竹南門市", "qty": 21}, {"loc": "台中lalaport", "qty": 18}, {"loc": "台南南紡", "qty": 39}]}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 20g", "barcode": "4713233984721", "stock": 69, "stores": [{"loc": "竹南門市", "qty": 13}, {"loc": "台中lalaport", "qty": 27}, {"loc": "台南南紡", "qty": 29}]}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 草莓 75g", "barcode": "4713233984585", "stock": 65, "stores": [{"loc": "竹南門市", "qty": 24}, {"loc": "台中lalaport", "qty": 12}, {"loc": "台南南紡", "qty": 29}]}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 葡萄 75g", "barcode": "4713233984608", "stock": 56, "stores": [{"loc": "竹南門市", "qty": 23}, {"loc": "台南南紡", "qty": 33}]}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 草莓(無氟) 75g", "barcode": "4713233984592", "stock": 82, "stores": [{"loc": "竹南門市", "qty": 22}, {"loc": "台中lalaport", "qty": 12}, {"loc": "台南南紡", "qty": 48}]}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 葡萄(無氟) 75g", "barcode": "4713233984615", "stock": 64, "stores": [{"loc": "竹南門市", "qty": 23}, {"loc": "台中lalaport", "qty": 12}, {"loc": "台南南紡", "qty": 29}]}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽/包 15抽/包", "barcode": "4713233981393", "stock": 24, "stores": [{"loc": "竹南門市", "qty": 24}]}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽×5包/串 15抽×5包/串", "barcode": "4713233981409", "stock": 12, "stores": [{"loc": "竹南門市", "qty": 12}]}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽×40包/箱 15抽×40包/箱", "barcode": "4713233981423", "stock": 28, "stores": [{"loc": "竹南門市", "qty": 2}, {"loc": "台中lalaport", "qty": 16}, {"loc": "台南南紡", "qty": 10}]}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽×12包/箱 70抽×12包/箱", "barcode": "4713233981416", "stock": 16, "stores": [{"loc": "台中lalaport", "qty": 7}, {"loc": "台南南紡", "qty": 9}]}, {"category": "精油系列", "name": "淨心芳療 薰衣草 10ml", "barcode": "4713233984011", "stock": 5, "stores": [{"loc": "竹南門市", "qty": 2}, {"loc": "台中lalaport", "qty": 1}, {"loc": "台南南紡", "qty": 2}]}, {"category": "精油系列", "name": "淨心芳療 葡萄柚 10ml", "barcode": "4713233984028", "stock": 8, "stores": [{"loc": "竹南門市", "qty": 4}, {"loc": "台中lalaport", "qty": 3}, {"loc": "台南南紡", "qty": 1}]}, {"category": "精油系列", "name": "淨心芳療 乳香 10ml", "barcode": "4713233984035", "stock": 3, "stores": [{"loc": "台中lalaport", "qty": 1}, {"loc": "台南南紡", "qty": 2}]}, {"category": "精油系列", "name": "淨心芳療 茶樹 10ml", "barcode": "4713233984042", "stock": 5, "stores": [{"loc": "台中lalaport", "qty": 3}, {"loc": "台南南紡", "qty": 2}]}, {"category": "精油系列", "name": "淨心芳療 尤加利 10ml", "barcode": "4713233984059", "stock": 5, "stores": [{"loc": "竹南門市", "qty": 2}, {"loc": "台中lalaport", "qty": 2}, {"loc": "台南南紡", "qty": 1}]}, {"category": "精油系列", "name": "淨心芳療 歐薄荷 10ml", "barcode": "4713233984066", "stock": 6, "stores": [{"loc": "竹南門市", "qty": 2}, {"loc": "台中lalaport", "qty": 2}, {"loc": "台南南紡", "qty": 2}]}, {"category": "精油系列", "name": "淨心芳療 玫瑰天竺葵 10ml", "barcode": "4713233984073", "stock": 5, "stores": [{"loc": "台中lalaport", "qty": 3}, {"loc": "台南南紡", "qty": 2}]}, {"category": "精油系列", "name": "淨心芳療 淨心複方植物油100ml 100ml", "barcode": "4713233984202", "stock": 4, "stores": [{"loc": "竹南門市", "qty": 4}]}, {"category": "精油系列", "name": "精油週邊 淨心水晶滾珠瓶10ml*3入組 3入/盒", "barcode": "4713233984332", "stock": 6, "stores": [{"loc": "竹南門市", "qty": 3}, {"loc": "台中lalaport", "qty": 1}, {"loc": "台南南紡", "qty": 2}]}, {"category": "精油系列", "name": "精油週邊 淨心擴香木 3入組 3入/盒", "barcode": "4713233984349", "stock": 4, "stores": [{"loc": "竹南門市", "qty": 1}, {"loc": "台中lalaport", "qty": 3}]}, {"category": "其他", "name": "淨淨悠遊卡 1入", "barcode": "4713233989528", "stock": 10, "stores": [{"loc": "台中lalaport", "qty": 10}]}, {"category": "其他", "name": "淨淨精美提袋(大)", "barcode": "4713233989474", "stock": 47, "stores": [{"loc": "竹南門市", "qty": 21}, {"loc": "台中lalaport", "qty": 26}]}, {"category": "其他", "name": "淨心芳療提袋(白色)", "barcode": "B00006", "stock": 20, "stores": [{"loc": "竹南門市", "qty": 20}]}, {"category": "其他", "name": "淨淨電繡織帶環保袋(大)", "barcode": "4713233989610", "stock": 944, "stores": [{"loc": "竹南門市", "qty": 94}, {"loc": "台中lalaport", "qty": 450}, {"loc": "台南南紡", "qty": 400}]}, {"category": "其他", "name": "淨淨熱壓環保袋(小)", "barcode": "4713233989627", "stock": 3743, "stores": [{"loc": "竹南門市", "qty": 294}, {"loc": "台中lalaport", "qty": 2449}, {"loc": "台南南紡", "qty": 1000}]}, {"category": "其他", "name": "淨淨多功能旅行袋", "barcode": "4713233989603", "stock": 45, "stores": [{"loc": "台中lalaport", "qty": 45}]}, {"category": "其他", "name": "淨淨行李吊牌", "barcode": "4713233989597", "stock": 13, "stores": [{"loc": "竹南門市", "qty": 13}]}, {"category": "其他", "name": "淨淨質感刺繡圍裙", "barcode": "4713233989634", "stock": 23, "stores": [{"loc": "竹南門市", "qty": 23}]}, {"category": "其他", "name": "淨淨皮革圓形捲尺", "barcode": "4713233989641", "stock": 2, "stores": [{"loc": "台中lalaport", "qty": 2}]}, {"category": "其他", "name": "淨淨刺繡高質感洗衣袋(6件組)", "barcode": "4713233989665", "stock": 65, "stores": [{"loc": "竹南門市", "qty": 23}, {"loc": "台中lalaport", "qty": 31}, {"loc": "台南南紡", "qty": 11}]}, {"category": "其他", "name": "淨淨花邊沐浴球", "barcode": "4713233989696", "stock": 33, "stores": [{"loc": "竹南門市", "qty": 6}, {"loc": "台中lalaport", "qty": 17}, {"loc": "台南南紡", "qty": 10}]}, {"category": "其他", "name": "淨淨｜棉花針織手腕袋", "barcode": "4713233989702", "stock": 20, "stores": [{"loc": "台南南紡", "qty": 20}]}, {"category": "其他", "name": "淨淨杯墊", "barcode": "VIP0001", "stock": 10, "stores": [{"loc": "台中lalaport", "qty": 10}]}, {"category": "其他", "name": "淨淨手提開窗盥洗包", "barcode": "4713233989719", "stock": 59, "stores": [{"loc": "竹南門市", "qty": 22}, {"loc": "台中lalaport", "qty": 27}, {"loc": "台南南紡", "qty": 10}]}, {"category": "其他", "name": "淨淨大容量兩用泡芙包", "barcode": "4713233989726", "stock": 4, "stores": [{"loc": "竹南門市", "qty": 4}]}, {"category": "其他", "name": "輕便鋁合金摺疊椅", "barcode": "4713233989740", "stock": 4, "stores": [{"loc": "竹南門市", "qty": 4}]}, {"category": "其他", "name": "QQ造型便利貼", "barcode": "4713233989733", "stock": 173, "stores": [{"loc": "竹南門市", "qty": 159}, {"loc": "台中lalaport", "qty": 3}, {"loc": "台南南紡", "qty": 11}]}, {"category": "其他", "name": "熱銷商品造型萬用夾", "barcode": "4713233989764", "stock": 89, "stores": [{"loc": "竹南門市", "qty": 43}, {"loc": "台中lalaport", "qty": 19}, {"loc": "台南南紡", "qty": 27}]}, {"category": "其他", "name": "2026馬年紅包袋", "barcode": "4713233989757", "stock": 22, "stores": [{"loc": "台中lalaport", "qty": 22}]}];
+const STORE_LIST = ["台中lalaport", "台南南紡", "竹南門市"];
+const storeState = { store:'', cat:'' };
+
+(function buildStoreCats(){
+  // Build store buttons dynamically
+  const storeRow = document.getElementById('st-storerow');
+  STORE_LIST.forEach(s=>{
+    const b = document.createElement('button');
+    b.className='cat-btn'; b.dataset.store=s; b.textContent=s;
+    b.onclick=()=>selectStore(s);
+    storeRow.appendChild(b);
+  });
+  // Build store stat chips dynamically
+  const statsBar = document.getElementById('st-stats');
+  STORE_LIST.forEach(s=>{
+    const chip = document.createElement('div');
+    chip.className='stat-chip';
+    chip.innerHTML = `<span>🏬 ${s}</span><b id="st-stat-${s.replace(/[^a-zA-Z0-9]/g,'_')}">-</b>`;
+    statsBar.appendChild(chip);
+  });
+  // Build category buttons
+  const cats = [...new Set(STORES_DATA.map(d=>d.category))];
+  const row = document.getElementById('st-catrow');
+  cats.forEach(c=>{
+    const b = document.createElement('button');
+    b.className='cat-btn'; b.dataset.cat=c; b.textContent=c;
+    b.onclick=()=>selectStoreCat(c);
+    row.appendChild(b);
+  });
+})();
+
+function selectStore(s){
+  storeState.store=s;
+  document.querySelectorAll('#st-storerow .cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.store===s));
+  renderStore();
+}
+function selectStoreCat(c){
+  storeState.cat=c;
+  document.querySelectorAll('#st-catrow .cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));
+  renderStore();
+}
+function renderStore(){
+  const q = document.getElementById('st-search').value.trim().toLowerCase();
+  let items = STORES_DATA.filter(d=>{
+    if(storeState.cat && d.category!==storeState.cat) return false;
+    if(storeState.store){
+      const has = d.stores.some(s=>s.loc===storeState.store && s.qty>0);
+      if(!has) return false;
+    }
+    if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
+    return true;
+  });
+  // stats
+  const countBy = (loc)=> STORES_DATA.filter(d=>d.stores.some(s=>s.loc===loc && s.qty>0)).length;
+  document.getElementById('st-total').textContent = STORES_DATA.length;
+  STORE_LIST.forEach(s=>{
+    const el = document.getElementById('st-stat-'+s.replace(/[^a-zA-Z0-9]/g,'_'));
+    if(el) el.textContent = countBy(s);
+  });
+  document.getElementById('st-count').textContent = `顯示 ${items.length} 項商品`;
+
+  document.getElementById('st-tbody').innerHTML = items.length===0
+    ? '<tr><td colspan="4" class="no-results">找不到符合條件的商品</td></tr>'
+    : items.map(d=>{
+        const shownStores = storeState.store
+          ? d.stores.filter(s=>s.loc===storeState.store)
+          : d.stores;
+        const shownTotal = shownStores.reduce((a,s)=>a+s.qty,0);
+        const storeRows = shownStores.filter(s=>s.qty>0).map(s=>
+          `<div class="batch-row"><span class="batch-loc" style="min-width:150px">${s.loc}</span><span class="batch-qty">× ${s.qty.toLocaleString()} 件</span></div>`
+        ).join('');
+        return `<tr>
+          <td><span class="cat-badge">${d.category}</span></td>
+          <td class="name-cell">${d.name}</td>
+          <td class="stock-cell"><span class="stock-num stock-ok">${shownTotal.toLocaleString()}</span></td>
+          <td><div class="batch-list">${storeRows}</div></td>
+        </tr>`;
+      }).join('');
+}
+
+/* ===== VENDOR (業務給廠商) ===== */
+const VENDOR_DATA = [{"category": "居家清潔", "name": "淨淨剋菌液 10倍濃縮 500ml", "barcode": "4713233981553", "batches": [{"date": "2027/05/16", "qty": 3505, "loc": "外包"}], "first_expiry": "2027/05/16"}, {"category": "居家清潔", "name": "淨淨剋菌液 居家瓶 300ml", "barcode": "4713233981621", "batches": [{"date": "2027/01/04", "qty": 2223, "loc": "外包"}, {"date": "2027/01/26", "qty": 2509, "loc": "外包"}], "first_expiry": "2027/01/04"}, {"category": "居家清潔", "name": "淨淨剋菌液 隨身瓶 100ml", "barcode": "4713233986664", "batches": [{"date": "2027/01/04", "qty": 4242, "loc": "外包"}, {"date": "2027/03/08", "qty": 3106, "loc": "外包"}], "first_expiry": "2027/01/04"}, {"category": "居家清潔", "name": "食器清潔皂 慕斯瓶 500ml", "barcode": "4713233981256", "batches": [{"date": "2029/01/12", "qty": 9568, "loc": "外包"}], "first_expiry": "2029/01/12"}, {"category": "居家清潔", "name": "食器清潔皂 補充瓶 500ml", "barcode": "4713233981263", "batches": [{"date": "2029/01/01", "qty": 2383, "loc": "外包"}, {"date": "2029/02/02", "qty": 10020, "loc": "外包"}], "first_expiry": "2029/01/01"}, {"category": "居家清潔", "name": "食器清潔皂 隨身瓶 50ml", "barcode": "4713233982253", "batches": [{"date": "2029/01/01", "qty": 1750, "loc": "外包"}], "first_expiry": "2029/01/01"}, {"category": "居家清潔", "name": "速效除垢慕斯 補充瓶 500ml", "barcode": "4713233981317", "batches": [{"date": "2028/10/08", "qty": 676, "loc": "外包"}], "first_expiry": "2028/10/08"}, {"category": "居家清潔", "name": "速效除垢慕斯 新版【瓶蓋版】 500ml", "barcode": "4713233981294", "batches": [{"date": "2028/12/08", "qty": 2864, "loc": "外包"}, {"date": "2028/12/16", "qty": 10008, "loc": "外包"}, {"date": "2029/02/03", "qty": 1198, "loc": "外包"}, {"date": "2029/02/05", "qty": 1200, "loc": "外包"}, {"date": "2029/02/08", "qty": 1200, "loc": "外包"}, {"date": "2029/02/23", "qty": 1200, "loc": "外包"}, {"date": "2029/02/25", "qty": 2400, "loc": "外包"}, {"date": "2029/03/02", "qty": 1200, "loc": "外包"}, {"date": "2029/03/04", "qty": 1600, "loc": "外包"}], "first_expiry": "2028/12/08"}, {"category": "居家清潔", "name": "速效除垢慕斯 噴槍(單獨)", "barcode": "E10", "batches": [{"date": "2999/12/31", "qty": 11573, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "居家清潔", "name": "速效除黴凝膠 尖嘴瓶 150ml", "barcode": "4713233981539", "batches": [{"date": "2027/12/07", "qty": 4941, "loc": "外包"}, {"date": "2027/12/09", "qty": 40, "loc": "外包"}], "first_expiry": "2027/12/07"}, {"category": "居家清潔", "name": "濃縮家事皂 按壓瓶 700ml", "barcode": "4713233981324", "batches": [{"date": "2028/12/10", "qty": 3354, "loc": "外包"}, {"date": "2029/03/29", "qty": 1820, "loc": "外包"}], "first_expiry": "2028/12/10"}, {"category": "居家清潔", "name": "專用小噴瓶 泡沫噴瓶 300ml", "barcode": "4713233983823", "batches": [{"date": "2999/12/31", "qty": 12744, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "居家清潔", "name": "真濃縮洗衣精 標準瓶(第二版) 800ml", "barcode": "4713233981355", "batches": [{"date": "2028/12/03", "qty": 258, "loc": "外包"}, {"date": "2029/01/22", "qty": 3635, "loc": "外包"}], "first_expiry": "2028/12/03"}, {"category": "居家清潔", "name": "真濃縮洗衣精 補充罐(第二版) 800ml", "barcode": "4713233981362", "batches": [{"date": "2029/01/26", "qty": 478, "loc": "外包"}], "first_expiry": "2029/01/26"}, {"category": "居家清潔", "name": "真濃縮洗衣精 新版(瓶蓋版) 800ml", "barcode": "4713233981447", "batches": [{"date": "2029/01/26", "qty": 12534, "loc": "外包"}, {"date": "2029/03/01", "qty": 10010, "loc": "外包"}, {"date": "2029/03/09", "qty": 10080, "loc": "外包"}], "first_expiry": "2029/01/26"}, {"category": "居家清潔", "name": "真濃縮洗衣精 迷你瓶 30ml", "barcode": "4713233981379", "batches": [{"date": "2029/01/22", "qty": 3431, "loc": "外包"}, {"date": "2029/03/09", "qty": 1980, "loc": "外包"}], "first_expiry": "2029/01/22"}, {"category": "居家清潔", "name": "真濃縮洗衣精 隨身包 10ml", "barcode": "4713233981430", "batches": [{"date": "2028/10/07", "qty": 6531, "loc": "外包"}, {"date": "2028/10/14", "qty": 10000, "loc": "外包"}], "first_expiry": "2028/10/07"}, {"category": "居家清潔", "name": "真濃縮洗衣精 壓頭(單獨)", "barcode": "E13", "batches": [{"date": "2999/12/31", "qty": 8938, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 純淨無香 600ml", "barcode": "4713233984622", "batches": [{"date": "2027/12/08", "qty": 8, "loc": "外包"}, {"date": "2028/11/09", "qty": 1524, "loc": "外包"}], "first_expiry": "2027/12/08"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 日光棉花 600ml", "barcode": "4713233984639", "batches": [{"date": "2028/03/09", "qty": 190, "loc": "外包"}, {"date": "2028/10/30", "qty": 3489, "loc": "外包"}], "first_expiry": "2028/03/09"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 50ml", "barcode": "4713233984653", "batches": [{"date": "2029/01/27", "qty": 3130, "loc": "外包"}], "first_expiry": "2029/01/27"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 療癒花語 600ml", "barcode": "4713233984646", "batches": [{"date": "2028/02/25", "qty": 1017, "loc": "外包"}, {"date": "2028/11/09", "qty": 4416, "loc": "外包"}], "first_expiry": "2028/02/25"}, {"category": "肌膚滋養", "name": "胺基酸沐浴慕斯 50ml", "barcode": "4713233984660", "batches": [{"date": "2029/03/01", "qty": 2688, "loc": "外包"}], "first_expiry": "2029/03/01"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 日光棉花 500ml", "barcode": "4713233984677", "batches": [{"date": "2028/01/03", "qty": 369, "loc": "外包"}, {"date": "2028/03/23", "qty": 7990, "loc": "外包"}], "first_expiry": "2028/01/03"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 30ml", "barcode": "4713233984691", "batches": [{"date": "2027/10/13", "qty": 371, "loc": "外包"}, {"date": "2028/01/03", "qty": 4940, "loc": "外包"}], "first_expiry": "2027/10/13"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 8ml", "barcode": "4713233984752", "batches": [{"date": "2028/07/29", "qty": 1614, "loc": "外包"}, {"date": "2028/09/24", "qty": 2831, "loc": "外包"}], "first_expiry": "2028/07/29"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 療癒花語 500ml", "barcode": "4713233984684", "batches": [{"date": "2027/12/01", "qty": 6, "loc": "外包"}, {"date": "2028/01/16", "qty": 3986, "loc": "外包"}], "first_expiry": "2027/12/01"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 30ml", "barcode": "4713233984707", "batches": [{"date": "2027/12/01", "qty": 2374, "loc": "外包"}], "first_expiry": "2027/12/01"}, {"category": "肌膚滋養", "name": "胺基酸沐浴露 8ml", "barcode": "4713233984769", "batches": [{"date": "2028/07/29", "qty": 6340, "loc": "外包"}, {"date": "2028/09/24", "qty": 8136, "loc": "外包"}], "first_expiry": "2028/07/29"}, {"category": "肌膚滋養", "name": "植潤．水凝乳 療癒花語 300ml", "barcode": "4713233984738", "batches": [{"date": "2028/09/24", "qty": 28, "loc": "外包"}, {"date": "2028/09/30", "qty": 1614, "loc": "外包"}, {"date": "2028/10/01", "qty": 17, "loc": "外包"}, {"date": "2028/10/02", "qty": 944, "loc": "外包"}, {"date": "2028/10/06", "qty": 756, "loc": "外包"}, {"date": "2028/10/13", "qty": 400, "loc": "外包"}, {"date": "2028/10/14", "qty": 603, "loc": "外包"}, {"date": "2028/10/15", "qty": 597, "loc": "外包"}, {"date": "2028/10/16", "qty": 739, "loc": "外包"}, {"date": "2028/10/19", "qty": 861, "loc": "外包"}, {"date": "2028/10/20", "qty": 471, "loc": "外包"}, {"date": "2028/10/21", "qty": 662, "loc": "外包"}, {"date": "2028/10/22", "qty": 667, "loc": "外包"}], "first_expiry": "2028/09/24"}, {"category": "肌膚滋養", "name": "植潤．水凝乳 8ml", "barcode": "4713233984745", "batches": [{"date": "2028/10/29", "qty": 4476, "loc": "外包"}], "first_expiry": "2028/10/29"}, {"category": "潔顏系列", "name": "護敏無泡潔顏露 標準瓶 150ml", "barcode": "4713233984509", "batches": [{"date": "2027/12/02", "qty": 3529, "loc": "外包"}], "first_expiry": "2027/12/02"}, {"category": "潔顏系列", "name": "護敏無泡潔顏露 體驗瓶 20ml", "barcode": "4713233984516", "batches": [{"date": "2027/12/02", "qty": 1166, "loc": "外包"}], "first_expiry": "2027/12/02"}, {"category": "潔顏系列", "name": "胺基酸溫和潔顏慕斯 標準瓶 150ml", "barcode": "4713233984523", "batches": [{"date": "2028/06/15", "qty": 5, "loc": "外包"}, {"date": "2028/09/24", "qty": 1031, "loc": "外包"}, {"date": "2028/11/02", "qty": 2406, "loc": "外包"}, {"date": "2028/11/12", "qty": 2544, "loc": "外包"}, {"date": "2028/12/07", "qty": 5040, "loc": "外包"}], "first_expiry": "2028/06/15"}, {"category": "潔顏系列", "name": "胺基酸溫和潔顏慕斯 體驗瓶 30ml", "barcode": "4713233984530", "batches": [{"date": "2028/09/24", "qty": 5, "loc": "外包"}, {"date": "2028/12/07", "qty": 2298, "loc": "外包"}], "first_expiry": "2028/09/24"}, {"category": "潔顏系列", "name": "胺基酸深層潔顏乳 標準瓶 120ml", "barcode": "4713233984547", "batches": [{"date": "2028/12/30", "qty": 1977, "loc": "外包"}, {"date": "2029/01/01", "qty": 264, "loc": "外包"}], "first_expiry": "2028/12/30"}, {"category": "潔顏系列", "name": "胺基酸深層潔顏乳 體驗瓶 20ml", "barcode": "4713233984554", "batches": [{"date": "2029/01/01", "qty": 4282, "loc": "外包"}], "first_expiry": "2029/01/01"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 薄荷 150g", "barcode": "4713233984561", "batches": [{"date": "2028/12/05", "qty": 2, "loc": "外包"}, {"date": "2028/12/06", "qty": 817, "loc": "外包"}, {"date": "2028/12/07", "qty": 2580, "loc": "外包"}, {"date": "2028/12/08", "qty": 2600, "loc": "外包"}, {"date": "2029/02/08", "qty": 2460, "loc": "外包"}, {"date": "2029/02/09", "qty": 2460, "loc": "外包"}, {"date": "2029/02/10", "qty": 2460, "loc": "外包"}, {"date": "2029/02/11", "qty": 2600, "loc": "外包"}], "first_expiry": "2028/12/05"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 20g", "barcode": "4713233984714", "batches": [{"date": "2028/10/15", "qty": 31, "loc": "外包"}, {"date": "2028/12/05", "qty": 1776, "loc": "外包"}], "first_expiry": "2028/10/15"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 薄荷(無氟) 150g", "barcode": "4713233984578", "batches": [{"date": "2028/02/13", "qty": 1325, "loc": "外包"}, {"date": "2028/02/14", "qty": 1217, "loc": "外包"}], "first_expiry": "2028/02/13"}, {"category": "口腔呵護", "name": "【升級版】胺基酸多效牙膏 20g", "barcode": "4713233984721", "batches": [{"date": "2028/02/13", "qty": 1039, "loc": "外包"}], "first_expiry": "2028/02/13"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 草莓 75g", "barcode": "4713233984585", "batches": [{"date": "2028/02/26", "qty": 230, "loc": "外包"}], "first_expiry": "2028/02/26"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 葡萄 75g", "barcode": "4713233984608", "batches": [{"date": "2028/02/18", "qty": 537, "loc": "外包"}], "first_expiry": "2028/02/18"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 草莓(無氟) 75g", "barcode": "4713233984592", "batches": [{"date": "2028/02/23", "qty": 2787, "loc": "外包"}], "first_expiry": "2028/02/23"}, {"category": "口腔呵護", "name": "【升級版】兒童護齒牙膏 葡萄(無氟) 75g", "barcode": "4713233984615", "batches": [{"date": "2028/02/13", "qty": 2591, "loc": "外包"}], "first_expiry": "2028/02/13"}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽/包 15抽/包", "barcode": "4713233981393", "batches": [{"date": "2027/10/06", "qty": 17, "loc": "外包"}], "first_expiry": "2027/10/06"}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽×5包/串 15抽×5包/串", "barcode": "4713233981409", "batches": [{"date": "2027/10/06", "qty": 29, "loc": "外包"}], "first_expiry": "2027/10/06"}, {"category": "濕紙巾系列", "name": "濕紙巾 15抽×40包/箱 15抽×40包/箱", "barcode": "4713233981423", "batches": [{"date": "2027/10/06", "qty": 356, "loc": "外包"}], "first_expiry": "2027/10/06"}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽/包 70抽/包", "barcode": "4713233981386", "batches": [{"date": "2026/11/14", "qty": 2, "loc": "外包"}, {"date": "2027/10/08", "qty": 24, "loc": "外包"}], "first_expiry": "2026/11/14"}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽×3包/串 70抽×3包/串", "barcode": "4713233981454", "batches": [{"date": "2028/01/28", "qty": 7, "loc": "外包"}], "first_expiry": "2028/01/28"}, {"category": "濕紙巾系列", "name": "濕紙巾 70抽×12包/箱 70抽×12包/箱", "barcode": "4713233981416", "batches": [{"date": "2027/10/08", "qty": 6, "loc": "外包"}, {"date": "2028/01/28", "qty": 30, "loc": "外包"}], "first_expiry": "2027/10/08"}, {"category": "精油系列", "name": "淨心芳療 薰衣草 10ml", "barcode": "4713233984011", "batches": [{"date": "2026/09/24", "qty": 489, "loc": "外包"}, {"date": "2026/10/16", "qty": 48, "loc": "外包"}], "first_expiry": "2026/09/24"}, {"category": "精油系列", "name": "淨心芳療 葡萄柚 10ml", "barcode": "4713233984028", "batches": [{"date": "2026/10/16", "qty": 385, "loc": "外包"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 茶樹 10ml", "barcode": "4713233984042", "batches": [{"date": "2026/10/16", "qty": 440, "loc": "外包"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 尤加利 10ml", "barcode": "4713233984059", "batches": [{"date": "2026/10/16", "qty": 71, "loc": "外包"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 歐薄荷 10ml", "barcode": "4713233984066", "batches": [{"date": "2026/10/16", "qty": 816, "loc": "外包"}], "first_expiry": "2026/10/16"}, {"category": "精油系列", "name": "淨心芳療 玫瑰天竺葵 10ml", "barcode": "4713233984073", "batches": [{"date": "2026/11/12", "qty": 304, "loc": "外包"}], "first_expiry": "2026/11/12"}, {"category": "精油系列", "name": "淨心芳療 淨心複方植物油100ml 100ml", "barcode": "4713233984202", "batches": [{"date": "2027/12/15", "qty": 784, "loc": "外包"}], "first_expiry": "2027/12/15"}, {"category": "精油系列", "name": "精油週邊 淨心水晶滾珠瓶10ml*3入組 3入/盒", "barcode": "4713233984332", "batches": [{"date": "2999/12/31", "qty": 1166, "loc": "外包"}], "first_expiry": "2999/12/31"}, {"category": "精油系列", "name": "精油週邊 淨心擴香木 3入組 3入/盒", "barcode": "4713233984349", "batches": [{"date": "2999/12/31", "qty": 1145, "loc": "外包"}], "first_expiry": "2999/12/31"}];
+const VENDOR_CATS_ALLOWED = ['居家清潔','肌膚滋養','潔顏系列','口腔呵護','濕紙巾系列','精油系列'];
+const VENDOR_LIST = VENDOR_DATA.filter(d=>VENDOR_CATS_ALLOWED.includes(d.category));
+const vendorState = { cat:'', expFilter:'', onlySelected:false };
+const vendorSel = new Set();
+function vendorKey(d){ return d.barcode + '|' + d.name; }
+function toggleVendorSel(key, checked){
+  if(checked) vendorSel.add(key); else vendorSel.delete(key);
+  document.getElementById('v-selcount').textContent = vendorSel.size;
+  if(vendorState.onlySelected) renderVendor();
+}
+function toggleAllVendorSel(checked){
+  document.querySelectorAll('#v-tbody input.v-row-chk').forEach(cb=>{
+    cb.checked = checked;
+    const k = cb.dataset.key;
+    if(checked) vendorSel.add(k); else vendorSel.delete(k);
+  });
+  document.getElementById('v-selcount').textContent = vendorSel.size;
+  if(vendorState.onlySelected) renderVendor();
+}
+function clearVendorSel(){
+  vendorSel.clear();
+  document.getElementById('v-selcount').textContent = 0;
+  if(vendorState.onlySelected){ vendorState.onlySelected=false; document.getElementById('v-onlysel-btn').classList.remove('active'); }
+  renderVendor();
+}
+function toggleOnlySelected(){
+  vendorState.onlySelected = !vendorState.onlySelected;
+  document.getElementById('v-onlysel-btn').classList.toggle('active', vendorState.onlySelected);
+  renderVendor();
+}
+
+(function buildVendorCats(){
+  const cats = VENDOR_CATS_ALLOWED.filter(c=>VENDOR_LIST.some(d=>d.category===c));
+  const row = document.getElementById('v-catrow');
+  cats.forEach(c=>{
+    const b = document.createElement('button');
+    b.className='cat-btn'; b.dataset.cat=c; b.textContent=c;
+    b.onclick=()=>selectVendorCat(c);
+    row.appendChild(b);
+  });
+})();
+
+function selectVendorCat(c){
+  vendorState.cat=c;
+  document.querySelectorAll('#v-catrow .cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));
+  renderVendor();
+}
+function renderVendor(){
+  const q = document.getElementById('v-search').value.trim().toLowerCase();
+  let items = VENDOR_LIST.filter(d=>{
+    if(vendorState.onlySelected && !vendorSel.has(vendorKey(d))) return false;
+    if(vendorState.cat && d.category!==vendorState.cat) return false;
+    if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
+    return true;
+  });
+  document.getElementById('v-total').textContent = VENDOR_LIST.length;
+  document.getElementById('v-selcount').textContent = vendorSel.size;
+  document.getElementById('v-count').textContent = `顯示 ${items.length} 項商品`;
+
+  document.getElementById('v-tbody').innerHTML = items.length===0
+    ? '<tr><td colspan="5" class="no-results">找不到符合條件的商品</td></tr>'
+    : items.map(d=>{
+        const near = nearestOmsExpiry(d.batches);
+        const ec = near ? expClass(near.date) : 'none';
+        const expLabel = near
+          ? `<span class="exp-simple exp-${ec}">${near.date}</span>`
+          : `<span class="exp-simple exp-none">—</span>`;
+        const rowCls = ec==='urgent' ? 'row-urgent' : ec==='warn' ? 'row-warn' : '';
+        const k = vendorKey(d);
+        const checked = vendorSel.has(k) ? 'checked' : '';
+        return `<tr class="${rowCls}">
+          <td style="text-align:center"><input type="checkbox" class="v-row-chk" data-key="${k}" ${checked} onchange="toggleVendorSel('${k}', this.checked)"></td>
+          <td><span class="cat-badge">${d.category}</span></td>
+          <td style="font-family:monospace;font-size:.78rem;color:#64748b">${d.barcode}</td>
+          <td class="name-cell">${d.name}</td>
+          <td>${expLabel}</td>
+        </tr>`;
+      }).join('');
+  const all = document.querySelectorAll('#v-tbody input.v-row-chk');
+  const ca = document.getElementById('v-checkall');
+  if(ca) ca.checked = all.length>0 && [...all].every(cb=>cb.checked);
+}
+
+/* ===== 下載 Excel ===== */
+function downloadExcel(viewType){
+  if(typeof XLSX==='undefined'){ alert('Excel 元件載入中，請稍後再試'); return; }
+  let rows=[], fileName='';
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+
+  if(viewType==='m'){
+    const s=state.m;
+    let items=getFiltered('m');
+    if(s.sortCol) items.sort((a,b)=>{
+      if(s.sortCol==='stock') return (a.stock-b.stock)*s.sortDir;
+      return String(a[s.sortCol]).localeCompare(String(b[s.sortCol]),'zh-TW')*s.sortDir;
+    });
+    rows = items.map(d=>{
+      const goodBatches=(d.batches||[]).filter(b=>{
+        if(s.loc==='__defect__') return isDefectLoc(b.loc);
+        if(isDefectLoc(b.loc)) return false;
+        return !s.loc||b.loc===s.loc;
+      });
+      const goodStock=goodBatches.reduce((a,b)=>a+b.qty,0);
+      const batchDetail=goodBatches.filter(b=>b.qty>0).map(b=>`${b.loc}：${b.qty}${b.date?'（'+b.date+'）':''}`).join('；');
+      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'庫存':goodStock,'批次明細':batchDetail};
+    });
+    fileName=`淨淨_營運部庫存_${today}.xlsx`;
+
+  } else if(viewType==='s'){
+    let items=getFiltered('s');
+    if(state.s.sortCol) items.sort((a,b)=>{
+      if(state.s.sortCol==='stock') return (a.stock-b.stock)*state.s.sortDir;
+      return String(a[state.s.sortCol]).localeCompare(String(b[state.s.sortCol]),'zh-TW')*state.s.sortDir;
+    });
+    rows = items.map(d=>{
+      const isAqing=d.category==='阿清';
+      const effStock=isAqing
+        ?(d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0)
+        :(d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+      const near=nearestOmsExpiry(d.batches);
+      const expStr=near?near.date:'';
+      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'有效庫存':effStock,'最近效期':expStr};
+    });
+    fileName=`淨淨_庫存簡易版_${today}.xlsx`;
+
+  } else if(viewType==='store'){
+    const q=document.getElementById('st-search').value.trim().toLowerCase();
+    let items=STORES_DATA.filter(d=>{
+      if(storeState.cat&&d.category!==storeState.cat) return false;
+      if(storeState.store){
+        if(!d.stores.some(s=>s.loc===storeState.store&&s.qty>0)) return false;
+      }
+      if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
+      return true;
+    });
+    rows = items.map(d=>{
+      const row={'分類':d.category,'條碼':d.barcode,'品名':d.name};
+      const shownStores=storeState.store?d.stores.filter(s=>s.loc===storeState.store):d.stores;
+      shownStores.forEach(s=>{ if(s.qty>0) row[s.loc]=s.qty; });
+      row['合計']=shownStores.reduce((a,s)=>a+s.qty,0);
+      return row;
+    });
+    fileName=`淨淨_店面庫存_${today}.xlsx`;
+
+  } else if(viewType==='vendor'){
+    const q=document.getElementById('v-search').value.trim().toLowerCase();
+    let items=VENDOR_LIST.filter(d=>{
+      if(vendorState.onlySelected&&!vendorSel.has(vendorKey(d))) return false;
+      if(vendorState.cat&&d.category!==vendorState.cat) return false;
+      if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
+      return true;
+    });
+    rows = items.map(d=>{
+      const near=nearestOmsExpiry(d.batches);
+      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'最近效期':near?near.date:''};
+    });
+    fileName=`淨淨_廠商出貨效期_${today}.xlsx`;
+  }
+
+  if(rows.length===0){ alert('目前沒有資料可下載'); return; }
+
+  const ws=XLSX.utils.json_to_sheet(rows);
+  /* 自動欄寬 */
+  const colKeys=Object.keys(rows[0]);
+  ws['!cols']=colKeys.map(k=>{
+    let max=k.length;
+    rows.forEach(r=>{ const v=String(r[k]||''); if(v.length>max) max=v.length; });
+    return {wch:Math.min(max+4,50)};
+  });
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'庫存');
+  XLSX.writeFile(wb,fileName);
+}
+
+function goHome(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('homeScreen').classList.add('active');
+  document.getElementById('homeSearchInput').value='';
+  document.getElementById('homeSearchResults').classList.remove('active');
+  window.scrollTo(0,0);
+}
+
+/* ===== 首頁摘要統計 ===== */
+(function initHomeStats(){
+  const total = DATA.length;
+  let lowStock = 0, urgent = 0, warn = 0;
+  DATA.forEach(d=>{
+    // 用同仁簡易版的邏輯：只看外包倉(或阿清看公司庫)的有效庫存
+    const omsStock = (d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+    const coStock = (d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0);
+    const effStock = d.category==='阿清' ? coStock : omsStock;
+    if(effStock === 0) return; // 同仁版不顯示的品項，首頁也不計入
+    if(effStock <= 50) lowStock++;
+    const ec = expClass(d.first_expiry);
+    if(ec==='urgent') urgent++;
+    if(ec==='warn') warn++;
+  });
+  const el = document.getElementById('homeStats');
+  el.innerHTML =
+    '<div class="home-stat hs-urgent" onclick="statJump(\'urgent\')"><span class="hs-num">' + urgent + '</span><span class="hs-label">⚠️ 半年內到期</span></div>' +
+    '<div class="home-stat hs-warn" onclick="statJump(\'warn\')"><span class="hs-num">' + warn + '</span><span class="hs-label">⏳ 一年內到期</span></div>' +
+    '<div class="home-stat" onclick="statJump(\'low\')"><span class="hs-num">' + lowStock + '</span><span class="hs-label">📉 低庫存 (≤50)</span></div>';
+})();
+
+/* ===== 公告欄展開/收起 ===== */
+function toggleBulletin(){
+  const list = document.getElementById('bulletinList');
+  const btn = document.getElementById('bulletinToggle');
+  const isExpanded = list.style.maxHeight === 'none' || list.style.maxHeight === '';
+  if(list.style.maxHeight !== 'none'){
+    list.style.maxHeight = 'none';
+    btn.textContent = '收起 ▴';
+  } else {
+    list.style.maxHeight = '140px';
+    list.scrollTop = 0;
+    btn.textContent = '展開全部 ▾';
+  }
+}
+
+/* ===== 首頁摘要點擊跳轉 ===== */
+function statJump(type){
+  doEnterView('staff');
+  setTimeout(()=>{
+    // 用效期篩選器來篩選
+    const input = document.querySelector('#staffScreen .search-input');
+    if(type==='urgent'){
+      // 半年內到期：篩選出 ≤180 天的
+      state.s.expFilter = 'urgent';
+    } else if(type==='warn'){
+      // 一年內到期：篩選出 ≤365 天的
+      state.s.expFilter = 'warn';
+    } else if(type==='low'){
+      // 低庫存：在搜尋框顯示提示，用自訂篩選
+      state.s.expFilter = '';
+      state.s._lowStockFilter = true;
+    }
+    // 更新篩選按鈕的視覺狀態
+    document.querySelectorAll('#staffScreen .exp-btn').forEach(b=>{
+      b.classList.remove('active');
+      if(type==='urgent' && b.dataset.exp==='urgent') b.classList.add('active');
+      if(type==='warn' && b.dataset.exp==='warn') b.classList.add('active');
+    });
+    render('s');
+  }, 100);
+}
+
+/* ===== 全站搜尋 ===== */
+function homeSearch(q){
+  const box = document.getElementById('homeSearchResults');
+  q = q.trim().toLowerCase();
+  if(!q || q.length < 1){ box.classList.remove('active'); box.innerHTML=''; return; }
+  const results = DATA.filter(d => {
+    if(!(d.name.toLowerCase().includes(q) || d.barcode.includes(q))) return false;
+    // 只顯示同仁簡易版的分類，排除物料
+    if(!STAFF_INCLUDE.includes(d.category)) return false;
+    // 同仁簡易版邏輯：只顯示外包倉(或阿清看公司庫)有效庫存 > 0 的品項
+    const omsStock = (d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+    const coStock = (d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0);
+    const effStock = d.category==='阿清' ? coStock : omsStock;
+    return effStock > 0;
+  }).slice(0, 15);
+  if(results.length === 0){
+    box.innerHTML = '<div style="padding:16px;text-align:center;color:#9CA3AF;font-size:.85rem;">找不到相關商品</div>';
+    box.classList.add('active');
+    return;
+  }
+  box.innerHTML = results.map(d => {
+    const omsStock = (d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+    const coStock = (d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0);
+    const effStock = d.category==='阿清' ? coStock : omsStock;
+    const ec = expClass(d.first_expiry);
+    const dot = ec==='urgent' ? '🔴' : ec==='warn' ? '🟡' : ec==='ok' ? '🟢' : '';
+    return '<div class="search-item" onclick="searchJump(\'' + d.barcode + '\')">' +
+      '<span class="si-stock">' + effStock.toLocaleString() + '</span>' +
+      '<div class="si-name">' + dot + ' ' + d.name + '</div>' +
+      '<div class="si-meta">' + d.category + ' · ' + d.barcode + (d.first_expiry ? ' · 效期 ' + d.first_expiry : '') + '</div>' +
+    '</div>';
+  }).join('');
+  box.classList.add('active');
+}
+function searchJump(barcode){
+  document.getElementById('homeSearchResults').classList.remove('active');
+  document.getElementById('homeSearchInput').value='';
+  doEnterView('staff');
+  setTimeout(()=>{
+    const input = document.querySelector('#staffScreen .search-input');
+    if(input){ input.value = barcode; input.dispatchEvent(new Event('input')); }
+  }, 100);
+}
+// 點擊頁面其他地方關閉搜尋結果
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.home-search')){
+    document.getElementById('homeSearchResults').classList.remove('active');
+  }
+});
+
+</script>
+
+</body>
+</html>

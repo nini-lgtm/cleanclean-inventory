@@ -894,7 +894,10 @@ function getFiltered(px){
     if(s.cats && s.cats.length>0 && !s.cats.includes(d.category)) return false;
     if(s.pickOnly && s.picks && s.picks.size>0 && !s.picks.has(d.barcode)) return false;
     if(s._lowStockFilter){
-      if(d.stock > 50) return false;
+      const _oms=(d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+      const _co=(d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0);
+      const _eff=d.category==='阿清'?_co:_oms;
+      if(_eff > 50) return false;
     }
     if(s.expFilter){
       const omsBatches = px==='s'

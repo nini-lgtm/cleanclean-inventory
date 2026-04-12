@@ -80,8 +80,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .bulletin-list .bl-pin{font-size:.68rem;color:white;background:#F59E0B;padding:2px 8px;border-radius:8px;white-space:nowrap;min-width:48px;text-align:center;font-weight:500;}
 .bulletin-list .bl-product{font-size:.68rem;color:#D97706;background:#FEF3C7;border:1px solid #FDE68A;padding:2px 8px;border-radius:8px;white-space:nowrap;font-weight:600;}
 
-.cards-wrap{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;width:100%;max-width:680px;}
-.role-card{flex:1;min-width:255px;max-width:310px;background:white;border:1.5px solid var(--border);border-radius:24px;padding:34px 26px 30px;cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.25,.8,.25,1);box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.cards-wrap{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;width:100%;max-width:1020px;}
+.role-card{flex:1 1 calc(33.333% - 22px);min-width:220px;max-width:310px;background:white;border:1.5px solid var(--border);border-radius:24px;padding:34px 26px 30px;cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.25,.8,.25,1);box-shadow:0 2px 10px rgba(0,0,0,.05);}
 .role-card:hover{border-color:var(--mint);transform:translateY(-6px);box-shadow:0 12px 32px rgba(91,200,216,.18);}
 .role-card .icon{font-size:2.6rem;margin-bottom:14px;display:block;}
 .role-card h2{color:var(--green-deep);font-size:1.3rem;font-weight:700;margin-bottom:8px;letter-spacing:.04em;}
@@ -186,12 +186,16 @@ tbody tr.row-warn{background:#fffdf0;}
 .leg-r{background:#dc2626;}.leg-y{background:#f59e0b;}.leg-g{background:#22c55e;}
 .no-results{text-align:center;padding:56px 20px;color:var(--text-mid);font-size:.9rem;}
 
+@media(max-width:820px){
+  .cards-wrap{max-width:680px;}
+  .role-card{flex:1 1 calc(50% - 22px);min-width:220px;}
+}
 @media(max-width:580px){
   .cards-wrap{flex-direction:column;}
   .home-stats{gap:8px;}
   .home-stat{min-width:90px;padding:10px 12px;}
   .home-stat .hs-num{font-size:1.4rem;}
-  .role-card{min-width:unset;max-width:100%;}
+  .role-card{flex:1 1 100%;min-width:unset;max-width:100%;}
   .topbar,.controls,.stats-bar,.table-wrap,.result-count,.legend,.filter-banner{padding-left:16px;padding-right:16px;}
 }
 

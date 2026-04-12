@@ -605,9 +605,18 @@ tbody tr.row-warn{background:#fffdf0;}
     <span class="topbar-title">📐 產品規格・箱入數與尺寸</span>
     <div class="dl-wrap"><button class="dl-btn" onclick="downloadExcel('spec')">⬇ Excel</button><button class="dl-btn" onclick="downloadPDF('spec')">⬇ PDF</button></div>
   </div>
+  <div class="stats-bar">
+    <div class="stat-chip"><span>📐 品項數</span><b id="spec-total">-</b></div>
+    <div class="stat-chip"><span>✅ 已勾選</span><b id="spec-selcount">0</b></div>
+  </div>
   <div class="controls" style="gap:10px;flex-wrap:wrap;">
     <div id="spec-catrow" class="filter-row" style="display:flex;gap:6px;flex-wrap:wrap;">
       <button class="cat-btn active" data-cat="" onclick="selectSpecCat('')">全部</button>
+    </div>
+    <div class="filter-row" style="display:flex;gap:6px;flex-wrap:wrap;">
+      <span class="filter-label">勾選：</span>
+      <button class="cat-btn" id="spec-onlysel-btn" onclick="toggleSpecOnlySel()">只看已勾選</button>
+      <button class="cat-btn" onclick="clearSpecSel()">清除勾選</button>
     </div>
     <input type="text" id="spec-search" class="search-box" placeholder="🔍 搜尋品名或條碼…" oninput="renderSpec()" style="max-width:320px;">
   </div>
@@ -615,6 +624,7 @@ tbody tr.row-warn{background:#fffdf0;}
     <div style="overflow-x:auto;">
       <table class="data-table">
         <thead><tr>
+          <th style="width:42px;text-align:center"><input type="checkbox" id="spec-checkall" onchange="toggleAllSpecSel(this.checked)"></th>
           <th>條碼</th><th>品名</th><th>容量</th><th>箱入數</th>
           <th>長(mm)</th><th>寬(mm)</th><th>高(mm)</th>
         </tr></thead>
@@ -1338,6 +1348,7 @@ function getExportData(viewType){
   } else if(viewType==='spec'){
     const sq=(document.getElementById('spec-search')?.value||'').trim().toLowerCase();
     rows=Object.values(SPEC_DATA).filter(s=>{
+      if(specOnlySel && !specSel.has(s.barcode)) return false;
       if(specCat && s.cat!==specCat) return false;
       if(sq) return s.name.toLowerCase().includes(sq)||s.barcode.includes(sq);
       return true;
@@ -1553,6 +1564,9 @@ window.onload=function(){
 
 /* ===== SPEC (產品規格) ===== */
 let specCat='';
+const specSel=new Set();
+let specOnlySel=false;
+
 function initSpecCats(){
   const cats=[...new Set(Object.values(SPEC_DATA).map(s=>s.cat).filter(Boolean))];
   const row=document.getElementById('spec-catrow');
@@ -1569,15 +1583,53 @@ function selectSpecCat(c){
   document.querySelectorAll('#spec-catrow .cat-btn').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));
   renderSpec();
 }
+function toggleSpecSel(barcode,checked){
+  if(checked) specSel.add(barcode); else specSel.delete(barcode);
+  document.getElementById('spec-selcount').textContent=specSel.size;
+  if(specOnlySel) renderSpec();
+  // sync header checkbox
+  const all=document.querySelectorAll('#spec-tbody input.sp-row-chk');
+  const ca=document.getElementById('spec-checkall');
+  if(ca) ca.checked = all.length>0 && [...all].every(c=>c.checked);
+}
+function toggleAllSpecSel(checked){
+  document.querySelectorAll('#spec-tbody input.sp-row-chk').forEach(cb=>{
+    cb.checked=checked;
+    if(checked) specSel.add(cb.dataset.key); else specSel.delete(cb.dataset.key);
+  });
+  document.getElementById('spec-selcount').textContent=specSel.size;
+  if(specOnlySel) renderSpec();
+}
+function toggleSpecOnlySel(){
+  specOnlySel=!specOnlySel;
+  const btn=document.getElementById('spec-onlysel-btn');
+  btn.classList.toggle('active',specOnlySel);
+  renderSpec();
+}
+function clearSpecSel(){
+  specSel.clear();
+  specOnlySel=false;
+  document.getElementById('spec-selcount').textContent=0;
+  document.getElementById('spec-onlysel-btn').classList.remove('active');
+  renderSpec();
+}
 function renderSpec(){
   const q=(document.getElementById('spec-search')?.value||'').trim().toLowerCase();
   const items=Object.values(SPEC_DATA).filter(s=>{
+    if(specOnlySel && !specSel.has(s.barcode)) return false;
     if(specCat && s.cat!==specCat) return false;
     if(!q) return true;
     return s.name.toLowerCase().includes(q) || s.barcode.includes(q);
   });
+  document.getElementById('spec-total').textContent=Object.keys(SPEC_DATA).length;
+  document.getElementById('spec-selcount').textContent=specSel.size;
   const tbody=document.getElementById('spec-tbody');
-  tbody.innerHTML=items.map(s=>`<tr>
+  tbody.innerHTML=items.length===0
+    ? '<tr><td colspan="8" class="no-results">找不到符合條件的商品</td></tr>'
+    : items.map(s=>{
+    const checked=specSel.has(s.barcode)?'checked':'';
+    return `<tr>
+    <td style="text-align:center"><input type="checkbox" class="sp-row-chk" data-key="${s.barcode}" ${checked} onchange="toggleSpecSel('${s.barcode}',this.checked)"></td>
     <td style="font-family:monospace;color:#64748B;">${s.barcode}</td>
     <td>${s.name}</td>
     <td style="text-align:center;">${s.volume}</td>
@@ -1585,7 +1637,11 @@ function renderSpec(){
     <td style="text-align:right;">${s.L||'-'}</td>
     <td style="text-align:right;">${s.W||'-'}</td>
     <td style="text-align:right;">${s.H||'-'}</td>
-  </tr>`).join('');
+  </tr>`;}).join('');
+  // sync header checkbox
+  const all=document.querySelectorAll('#spec-tbody input.sp-row-chk');
+  const ca=document.getElementById('spec-checkall');
+  if(ca) ca.checked = all.length>0 && [...all].every(c=>c.checked);
 }
 initSpecCats();
 

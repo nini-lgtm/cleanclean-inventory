@@ -204,6 +204,8 @@ tbody tr.row-warn{background:#fffdf0;}
   #vendorScreen table{font-size:.78rem;}
   #vendorScreen table th,#vendorScreen table td{padding:8px 6px;}
   #vendorScreen thead th{font-size:.7rem;}
+  #vendorScreen .v-spec-col{font-size:.72rem;padding:6px 4px!important;}
+  #vendorScreen .stats-bar,#vendorScreen .controls,#vendorScreen .legend,#vendorScreen .table-wrap{max-width:100%!important;}
   #specScreen .data-table{font-size:.78rem;}
   #specScreen .data-table th,#specScreen .data-table td{padding:8px 6px;}
   #specScreen thead th{font-size:.7rem;}
@@ -217,9 +219,14 @@ tbody tr.row-warn{background:#fffdf0;}
   .topbar,.controls,.stats-bar,.table-wrap,.result-count,.legend,.filter-banner{padding-left:16px;padding-right:16px;}
   /* vendor table mobile */
   #vendorScreen table{font-size:.72rem;}
-  #vendorScreen table th,#vendorScreen table td{padding:7px 5px;}
+  #vendorScreen table th,#vendorScreen table td{padding:7px 4px;}
   #vendorScreen thead th{font-size:.65rem;}
-  #vendorScreen table th:nth-child(3),#vendorScreen table td:nth-child(3){display:none;} /* hide barcode */
+  #vendorScreen table th:nth-child(1){width:28px;}  /* checkbox smaller */
+  #vendorScreen table th:nth-child(2),#vendorScreen table td:nth-child(2){display:none;} /* hide 分類 */
+  #vendorScreen table th:nth-child(3),#vendorScreen table td:nth-child(3){display:none;} /* hide 條碼 */
+  #vendorScreen .v-spec-col{font-size:.65rem;padding:6px 3px!important;}
+  #vendorScreen .legend{font-size:.68rem;gap:6px;flex-wrap:wrap;}
+  #vendorScreen .stats-bar,#vendorScreen .controls,#vendorScreen .legend,#vendorScreen .table-wrap{max-width:100%!important;}
   /* spec table mobile */
   #specScreen .data-table{font-size:.72rem;}
   #specScreen .data-table th:nth-child(2),#specScreen .data-table td:nth-child(2){display:none;}
@@ -1223,9 +1230,9 @@ function toggleVendorSpec(){
   document.querySelectorAll('.v-spec-col').forEach(el=>{
     el.style.display = vendorState.showSpec ? '' : 'none';
   });
-  // widen table area when spec columns shown
+  // widen table area when spec columns shown (CSS media queries override on small screens)
   const mw = vendorState.showSpec ? '1200px' : '960px';
-  document.querySelectorAll('#vendorScreen .stats-bar,#vendorScreen .controls,#vendorScreen .legend,#vendorScreen .table-wrap').forEach(el=>el.style.maxWidth=mw);
+  document.querySelectorAll('#vendorScreen .stats-bar,#vendorScreen .controls,#vendorScreen .legend,#vendorScreen .table-wrap').forEach(el=>{el.style.maxWidth=mw;});
   renderVendor();
 }
 function toggleOnlySelected(){

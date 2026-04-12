@@ -186,6 +186,12 @@ tbody tr.row-warn{background:#fffdf0;}
 .leg-r{background:#dc2626;}.leg-y{background:#f59e0b;}.leg-g{background:#22c55e;}
 .no-results{text-align:center;padding:56px 20px;color:var(--text-mid);font-size:.9rem;}
 
+/* VENDOR TABLE */
+#vendorScreen .stats-bar,#vendorScreen .controls,#vendorScreen .legend,#vendorScreen .table-wrap{max-width:960px;margin-left:auto;margin-right:auto;}
+#vendorScreen table{width:100%;}
+#vendorScreen table th,#vendorScreen table td{white-space:nowrap;padding:10px 10px;}
+#vendorScreen table td:nth-child(4){white-space:normal;word-break:break-word;} /* 品名 */
+
 /* SPEC TABLE */
 #specScreen .stats-bar,#specScreen .controls,#specScreen .table-wrap{max-width:960px;margin-left:auto;margin-right:auto;}
 #specScreen .data-table{width:100%;}
@@ -195,6 +201,9 @@ tbody tr.row-warn{background:#fffdf0;}
 @media(max-width:820px){
   .cards-wrap{max-width:680px;}
   .role-card{flex:1 1 calc(50% - 22px);min-width:220px;}
+  #vendorScreen table{font-size:.78rem;}
+  #vendorScreen table th,#vendorScreen table td{padding:8px 6px;}
+  #vendorScreen thead th{font-size:.7rem;}
   #specScreen .data-table{font-size:.78rem;}
   #specScreen .data-table th,#specScreen .data-table td{padding:8px 6px;}
   #specScreen thead th{font-size:.7rem;}
@@ -206,6 +215,11 @@ tbody tr.row-warn{background:#fffdf0;}
   .home-stat .hs-num{font-size:1.4rem;}
   .role-card{flex:1 1 100%;min-width:unset;max-width:100%;}
   .topbar,.controls,.stats-bar,.table-wrap,.result-count,.legend,.filter-banner{padding-left:16px;padding-right:16px;}
+  /* vendor table mobile */
+  #vendorScreen table{font-size:.72rem;}
+  #vendorScreen table th,#vendorScreen table td{padding:7px 5px;}
+  #vendorScreen thead th{font-size:.65rem;}
+  #vendorScreen table th:nth-child(3),#vendorScreen table td:nth-child(3){display:none;} /* hide barcode */
   /* spec table mobile */
   #specScreen .data-table{font-size:.72rem;}
   #specScreen .data-table th:nth-child(2),#specScreen .data-table td:nth-child(2){display:none;}
@@ -1209,6 +1223,9 @@ function toggleVendorSpec(){
   document.querySelectorAll('.v-spec-col').forEach(el=>{
     el.style.display = vendorState.showSpec ? '' : 'none';
   });
+  // widen table area when spec columns shown
+  const mw = vendorState.showSpec ? '1200px' : '960px';
+  document.querySelectorAll('#vendorScreen .stats-bar,#vendorScreen .controls,#vendorScreen .legend,#vendorScreen .table-wrap').forEach(el=>el.style.maxWidth=mw);
   renderVendor();
 }
 function toggleOnlySelected(){

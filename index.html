@@ -187,31 +187,17 @@ tbody tr.row-warn{background:#fffdf0;}
 .no-results{text-align:center;padding:56px 20px;color:var(--text-mid);font-size:.9rem;}
 
 /* SPEC TABLE */
-#specScreen .table-scroll{max-width:820px;margin:0 auto;}
-#specScreen .data-table{table-layout:fixed;width:100%;}
-#specScreen .data-table th:nth-child(1){width:38px;}  /* checkbox */
-#specScreen .data-table th:nth-child(2){width:120px;} /* 條碼 */
-#specScreen .data-table th:nth-child(3){width:auto;}  /* 品名 */
-#specScreen .data-table th:nth-child(4){width:60px;}  /* 容量 */
-#specScreen .data-table th:nth-child(5){width:60px;}  /* 箱入數 */
-#specScreen .data-table th:nth-child(6){width:60px;}  /* 長 */
-#specScreen .data-table th:nth-child(7){width:60px;}  /* 寬 */
-#specScreen .data-table th:nth-child(8){width:60px;}  /* 高 */
-#specScreen .data-table td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#specScreen .stats-bar,#specScreen .controls,#specScreen .table-wrap{max-width:960px;margin-left:auto;margin-right:auto;}
+#specScreen .data-table{width:100%;}
+#specScreen .data-table th,#specScreen .data-table td{white-space:nowrap;padding:10px 10px;}
 #specScreen .data-table td:nth-child(3){white-space:normal;word-break:break-word;}
 
 @media(max-width:820px){
   .cards-wrap{max-width:680px;}
   .role-card{flex:1 1 calc(50% - 22px);min-width:220px;}
-  #specScreen .data-table th:nth-child(2){width:100px;}
-  #specScreen .data-table th:nth-child(4),
-  #specScreen .data-table th:nth-child(5),
-  #specScreen .data-table th:nth-child(6),
-  #specScreen .data-table th:nth-child(7),
-  #specScreen .data-table th:nth-child(8){width:55px;}
   #specScreen .data-table{font-size:.78rem;}
-  #specScreen td{padding:8px 6px;}
-  #specScreen thead th{padding:10px 6px;font-size:.7rem;}
+  #specScreen .data-table th,#specScreen .data-table td{padding:8px 6px;}
+  #specScreen thead th{font-size:.7rem;}
 }
 @media(max-width:580px){
   .cards-wrap{flex-direction:column;}
@@ -220,18 +206,11 @@ tbody tr.row-warn{background:#fffdf0;}
   .home-stat .hs-num{font-size:1.4rem;}
   .role-card{flex:1 1 100%;min-width:unset;max-width:100%;}
   .topbar,.controls,.stats-bar,.table-wrap,.result-count,.legend,.filter-banner{padding-left:16px;padding-right:16px;}
-  /* spec table mobile: hide barcode, shrink columns */
+  /* spec table mobile */
   #specScreen .data-table{font-size:.72rem;}
-  #specScreen .data-table th:nth-child(1){width:32px;}
-  #specScreen .data-table th:nth-child(2){display:none;}  /* hide barcode on mobile */
-  #specScreen .data-table td:nth-child(2){display:none;}
-  #specScreen .data-table th:nth-child(4),
-  #specScreen .data-table th:nth-child(5),
-  #specScreen .data-table th:nth-child(6),
-  #specScreen .data-table th:nth-child(7),
-  #specScreen .data-table th:nth-child(8){width:42px;}
-  #specScreen td{padding:7px 4px;}
-  #specScreen thead th{padding:8px 4px;font-size:.65rem;}
+  #specScreen .data-table th:nth-child(2),#specScreen .data-table td:nth-child(2){display:none;}
+  #specScreen .data-table th,#specScreen .data-table td{padding:7px 4px;}
+  #specScreen thead th{font-size:.65rem;}
 }
 
 /* PASSWORD MODAL */

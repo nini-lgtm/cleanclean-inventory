@@ -6,6 +6,8 @@
 <title>淨淨 庫存查詢系統</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 :root{
   --mint:#5BC8D8;--mint-light:#E8F7FA;--mint-mid:#B8E8EF;
@@ -70,12 +72,13 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .bulletin-toggle:hover{background:var(--mint-light);}
 .bulletin-list{list-style:none;padding:0;margin:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--mint-mid) transparent;}
 #bulletinListSystem{max-height:108px;}
-#bulletinListImportant{max-height:none;}
+#bulletinListImportant{max-height:108px;}
 .bulletin-list::-webkit-scrollbar{width:4px;}
 .bulletin-list::-webkit-scrollbar-thumb{background:var(--mint-mid);border-radius:4px;}
 .bulletin-list li{padding:8px 0;border-bottom:1px solid #f0f4f5;font-size:.82rem;color:var(--text);display:flex;gap:12px;align-items:baseline;}
 .bulletin-list .bl-date{font-size:.65rem;color:white;background:var(--mint);padding:2px 8px;border-radius:8px;white-space:nowrap;min-width:72px;text-align:center;font-weight:500;}
 .bulletin-list .bl-pin{font-size:.68rem;color:white;background:#F59E0B;padding:2px 8px;border-radius:8px;white-space:nowrap;min-width:48px;text-align:center;font-weight:500;}
+.bulletin-list .bl-product{font-size:.68rem;color:#D97706;background:#FEF3C7;border:1px solid #FDE68A;padding:2px 8px;border-radius:8px;white-space:nowrap;font-weight:600;}
 
 .cards-wrap{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;width:100%;max-width:680px;}
 .role-card{flex:1;min-width:255px;max-width:310px;background:white;border:1.5px solid var(--border);border-radius:24px;padding:34px 26px 30px;cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.25,.8,.25,1);box-shadow:0 2px 10px rgba(0,0,0,.05);}
@@ -93,6 +96,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .back-btn:hover{background:rgba(255,255,255,.28);}
 .topbar-title{color:white;font-size:1.05rem;font-weight:700;flex:1;}
 .topbar-badge{font-size:.7rem;color:rgba(255,255,255,.8);background:rgba(255,255,255,.18);padding:4px 12px;border-radius:14px;white-space:nowrap;}
+.dl-wrap{display:flex;gap:6px;align-items:center;}
 .dl-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:white;border-radius:10px;padding:5px 12px;font-size:.72rem;font-family:inherit;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px;}
 .dl-btn:hover{background:rgba(255,255,255,.35);}
 
@@ -138,7 +142,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .toggle-btn{padding:4px 12px;border-radius:14px;border:1.5px solid var(--border);background:var(--card);color:var(--text-mid);font-size:.71rem;font-family:inherit;cursor:pointer;transition:all .15s;}
 .toggle-btn.active{background:var(--green-dark);border-color:var(--green-dark);color:white;}
 .toggle-btn:hover:not(.active){border-color:var(--green-dark);color:var(--green-dark);}
-.result-count{padding:0 24px 8px;font-size:.75rem;color:var(--text-mid);}
+.result-count{display:none;padding:0 24px 8px;font-size:.75rem;color:var(--text-mid);}
 
 /* TABLE */
 .table-wrap{padding:0 24px 40px;}
@@ -258,10 +262,16 @@ tbody tr.row-warn{background:#fffdf0;}
     <div class="home-bulletin" id="homeBulletinImportant">
       <div class="bulletin-header">
         <span class="bh-title">🔔 重要公告</span>
+        <button class="bulletin-toggle" id="bulletinToggleImportant" onclick="toggleBulletinImportant()">展開全部 ▾</button>
       </div>
       <ul class="bulletin-list" id="bulletinListImportant">
-      <li><span class="bl-pin">置頂</span><span class="bl-date">2026/04/11</span><strong>濕紙巾70抽 缺貨中，預計5月底到貨，如有提早會再通知大家</strong></li>
-    </ul>
+        <li><span class="bl-date">2026/04/11</span><span class="bl-product">濕紙巾70抽</span>缺貨中，預計5月底到貨，如有提早會再通知大家</li>
+        <li><span class="bl-date">2026/04/11</span><span class="bl-product">除垢｜瓶蓋版</span>預計 04/30 瓶口增加鋁膜，箱入數變更為一箱24瓶</li>
+        <li><span class="bl-date">2026/03/13</span><span class="bl-product">全產品</span>原物料、包材因戰爭關係，價格隨時波動</li>
+        <li><span class="bl-date">2026/03/03</span><span class="bl-product">沐浴慕斯｜無香</span>紙盒、瓶貼改為加大版本，容量不變</li>
+        <li><span class="bl-date">2026/01/14</span><span class="bl-product">除垢｜壓頭版</span>改為獨立包裝，壓頭版已下架</li>
+        <li><span class="bl-date">2026/01/01</span><span class="bl-product">洗衣精｜壓頭＆補充</span>成分更新，改善低溫變稠（壓頭批號：260123R／補充批號：260113R、260127R）</li>
+      </ul>
     </div>
     <div class="home-bulletin" id="homeBulletinSystem">
       <div class="bulletin-header">
@@ -310,7 +320,7 @@ tbody tr.row-warn{background:#fffdf0;}
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← 返回首頁</button>
     <span class="topbar-title">📊 營運部</span>
-    <button class="dl-btn" onclick="downloadExcel('m')">⬇ 下載 Excel</button>
+    <div class="dl-wrap"><button class="dl-btn" onclick="downloadExcel('m')">⬇ Excel</button><button class="dl-btn" onclick="downloadPDF('m')">⬇ PDF</button></div>
     <span class="topbar-badge">2026/04/11 更新</span>
   </div>
   <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:12px;padding:10px 16px;margin:10px 24px 0;font-size:.82rem;color:#5D4037;display:flex;align-items:center;gap:8px;">
@@ -413,7 +423,7 @@ tbody tr.row-warn{background:#fffdf0;}
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← 返回首頁</button>
     <span class="topbar-title">👥 同仁簡易版</span>
-    <button class="dl-btn" onclick="downloadExcel('s')">⬇ 下載 Excel</button>
+    <div class="dl-wrap"><button class="dl-btn" onclick="downloadExcel('s')">⬇ Excel</button><button class="dl-btn" onclick="downloadPDF('s')">⬇ PDF</button></div>
     <span class="topbar-badge">2026/04/11 更新</span>
   </div>
   <div class="stats-bar">
@@ -486,7 +496,7 @@ tbody tr.row-warn{background:#fffdf0;}
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← 返回首頁</button>
     <span class="topbar-title">🏬 百貨店面庫存</span>
-    <button class="dl-btn" onclick="downloadExcel('store')">⬇ 下載 Excel</button>
+    <div class="dl-wrap"><button class="dl-btn" onclick="downloadExcel('store')">⬇ Excel</button><button class="dl-btn" onclick="downloadPDF('store')">⬇ PDF</button></div>
     <span class="topbar-badge">2026/04/11 更新</span>
   </div>
   <div class="stats-bar" id="st-stats">
@@ -527,7 +537,7 @@ tbody tr.row-warn{background:#fffdf0;}
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← 返回首頁</button>
     <span class="topbar-title">📦 業務・外包出貨效期</span>
-    <button class="dl-btn" onclick="downloadExcel('vendor')">⬇ 下載 Excel</button>
+    <div class="dl-wrap"><button class="dl-btn" onclick="downloadExcel('vendor')">⬇ Excel</button><button class="dl-btn" onclick="downloadPDF('vendor')">⬇ PDF</button></div>
     <span class="topbar-badge">2026/04/11 更新</span>
   </div>
   <div class="stats-bar">
@@ -1176,95 +1186,247 @@ function renderVendor(){
   if(ca) ca.checked = all.length>0 && [...all].every(cb=>cb.checked);
 }
 
-/* ===== 下載 Excel ===== */
-function downloadExcel(viewType){
-  if(typeof XLSX==='undefined'){ alert('Excel 元件載入中，請稍後再試'); return; }
-  let rows=[], fileName='';
-  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-
+/* ===== 匯出用常數 ===== */
+const LOGO_B64='data:image/png;base64,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';
+const VIEW_TITLES = {m:'營運部庫存', s:'庫存簡易版', store:'店面庫存', vendor:'廠商出貨效期'};
+function getExportData(viewType){
+  let rows=[];
   if(viewType==='m'){
     const s=state.m;
     let items=getFiltered('m');
-    if(s.sortCol) items.sort((a,b)=>{
-      if(s.sortCol==='stock') return (a.stock-b.stock)*s.sortDir;
-      return String(a[s.sortCol]).localeCompare(String(b[s.sortCol]),'zh-TW')*s.sortDir;
+    if(s.sortCol) items.sort((a,b)=>s.sortCol==='stock'?(a.stock-b.stock)*s.sortDir:String(a[s.sortCol]).localeCompare(String(b[s.sortCol]),'zh-TW')*s.sortDir);
+    rows=items.map(d=>{
+      const gb=(d.batches||[]).filter(b=>{if(s.loc==='__defect__') return isDefectLoc(b.loc);if(isDefectLoc(b.loc)) return false;return !s.loc||b.loc===s.loc;});
+      const gs=gb.reduce((a,b)=>a+b.qty,0);
+      const bd=gb.filter(b=>b.qty>0).map(b=>`${b.loc}：${b.qty}${b.date?'（'+b.date+'）':''}`).join('；');
+      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'庫存':gs,'批次明細':bd};
     });
-    rows = items.map(d=>{
-      const goodBatches=(d.batches||[]).filter(b=>{
-        if(s.loc==='__defect__') return isDefectLoc(b.loc);
-        if(isDefectLoc(b.loc)) return false;
-        return !s.loc||b.loc===s.loc;
-      });
-      const goodStock=goodBatches.reduce((a,b)=>a+b.qty,0);
-      const batchDetail=goodBatches.filter(b=>b.qty>0).map(b=>`${b.loc}：${b.qty}${b.date?'（'+b.date+'）':''}`).join('；');
-      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'庫存':goodStock,'批次明細':batchDetail};
-    });
-    fileName=`淨淨_營運部庫存_${today}.xlsx`;
-
   } else if(viewType==='s'){
     let items=getFiltered('s');
-    if(state.s.sortCol) items.sort((a,b)=>{
-      if(state.s.sortCol==='stock') return (a.stock-b.stock)*state.s.sortDir;
-      return String(a[state.s.sortCol]).localeCompare(String(b[state.s.sortCol]),'zh-TW')*state.s.sortDir;
-    });
-    rows = items.map(d=>{
-      const isAqing=d.category==='阿清';
-      const effStock=isAqing
-        ?(d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0)
-        :(d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
+    if(state.s.sortCol) items.sort((a,b)=>state.s.sortCol==='stock'?(a.stock-b.stock)*state.s.sortDir:String(a[state.s.sortCol]).localeCompare(String(b[state.s.sortCol]),'zh-TW')*state.s.sortDir);
+    rows=items.map(d=>{
+      const isA=d.category==='阿清';
+      const eff=isA?(d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0):(d.batches||[]).filter(b=>b.loc==='外包').reduce((a,b)=>a+b.qty,0);
       const near=nearestOmsExpiry(d.batches);
-      const expStr=near?near.date:'';
-      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'有效庫存':effStock,'最近效期':expStr};
+      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'有效庫存':eff,'最近效期':near?near.date:''};
     });
-    fileName=`淨淨_庫存簡易版_${today}.xlsx`;
-
   } else if(viewType==='store'){
     const q=document.getElementById('st-search').value.trim().toLowerCase();
-    let items=STORES_DATA.filter(d=>{
-      if(storeState.cat&&d.category!==storeState.cat) return false;
-      if(storeState.store){
-        if(!d.stores.some(s=>s.loc===storeState.store&&s.qty>0)) return false;
-      }
-      if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
-      return true;
-    });
-    rows = items.map(d=>{
+    let items=STORES_DATA.filter(d=>{if(storeState.cat&&d.category!==storeState.cat) return false;if(storeState.store&&!d.stores.some(s=>s.loc===storeState.store&&s.qty>0)) return false;if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);return true;});
+    rows=items.map(d=>{
       const row={'分類':d.category,'條碼':d.barcode,'品名':d.name};
-      const shownStores=storeState.store?d.stores.filter(s=>s.loc===storeState.store):d.stores;
-      shownStores.forEach(s=>{ if(s.qty>0) row[s.loc]=s.qty; });
-      row['合計']=shownStores.reduce((a,s)=>a+s.qty,0);
+      const ss=storeState.store?d.stores.filter(s=>s.loc===storeState.store):d.stores;
+      ss.forEach(s=>{if(s.qty>0) row[s.loc]=s.qty;});
+      row['合計']=ss.reduce((a,s)=>a+s.qty,0);
       return row;
     });
-    fileName=`淨淨_店面庫存_${today}.xlsx`;
-
   } else if(viewType==='vendor'){
     const q=document.getElementById('v-search').value.trim().toLowerCase();
-    let items=VENDOR_LIST.filter(d=>{
-      if(vendorState.onlySelected&&!vendorSel.has(vendorKey(d))) return false;
-      if(vendorState.cat&&d.category!==vendorState.cat) return false;
-      if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
-      return true;
-    });
-    rows = items.map(d=>{
-      const near=nearestOmsExpiry(d.batches);
-      return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'最近效期':near?near.date:''};
-    });
-    fileName=`淨淨_廠商出貨效期_${today}.xlsx`;
+    let items=VENDOR_LIST.filter(d=>{if(vendorState.onlySelected&&!vendorSel.has(vendorKey(d))) return false;if(vendorState.cat&&d.category!==vendorState.cat) return false;if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);return true;});
+    rows=items.map(d=>{const near=nearestOmsExpiry(d.batches);return {'分類':d.category,'條碼':d.barcode,'品名':d.name,'最近效期':near?near.date:''};});
   }
+  return rows;
+}
 
-  if(rows.length===0){ alert('目前沒有資料可下載'); return; }
+/* ===== 下載 Excel（ExcelJS 美化版）===== */
+async function downloadExcel(viewType){
+  const rows=getExportData(viewType);
+  if(!rows.length){alert('目前沒有資料可下載');return;}
+  const today=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const title=VIEW_TITLES[viewType]||'庫存';
+  const fileName=`淨淨_${title}_${today}.xlsx`;
 
-  const ws=XLSX.utils.json_to_sheet(rows);
-  /* 自動欄寬 */
-  const colKeys=Object.keys(rows[0]);
-  ws['!cols']=colKeys.map(k=>{
-    let max=k.length;
-    rows.forEach(r=>{ const v=String(r[k]||''); if(v.length>max) max=v.length; });
-    return {wch:Math.min(max+4,50)};
+  if(typeof ExcelJS!=='undefined'){
+   try{
+    /* ---- ExcelJS 美化版 ---- */
+    const wb=new ExcelJS.Workbook();
+    const ws=wb.addWorksheet('庫存');
+    const cols=Object.keys(rows[0]);
+    const brandColor='1A8597'; const brandLight='E8F7FA'; const white='FFFFFF';
+
+    /* Logo 圖片 */
+    let hasLogo=false;
+    try{
+      const logoB64Raw=LOGO_B64.replace(/^data:image\/png;base64,/,'');
+      const logoId=wb.addImage({base64:logoB64Raw,extension:'png'});
+      hasLogo=true;
+      /* 將 logo 放在標題列左側 */
+      ws.addImage(logoId,{tl:{col:0.1,row:0.1},ext:{width:36,height:44}});
+    }catch(e){console.warn('Logo insert failed:',e);}
+
+    /* 標題列（加高以容納 logo） */
+    ws.mergeCells(1,1,1,cols.length);
+    const titleCell=ws.getCell(1,1);
+    titleCell.value=(hasLogo?'      ':'')+ `淨淨 CleanClean ─ ${title}　　${today.slice(0,4)}/${today.slice(4,6)}/${today.slice(6)}`;
+    titleCell.font={name:'Microsoft JhengHei',size:14,bold:true,color:{argb:white}};
+    titleCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:brandColor}};
+    titleCell.alignment={vertical:'middle',horizontal:'center'};
+    ws.getRow(1).height=hasLogo?46:32;
+
+    /* 表頭 */
+    const headerRow=ws.addRow(cols);
+    headerRow.eachCell((cell,i)=>{
+      cell.font={name:'Microsoft JhengHei',size:11,bold:true,color:{argb:white}};
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'2BA8BD'}};
+      cell.alignment={vertical:'middle',horizontal:'center'};
+      cell.border={bottom:{style:'thin',color:{argb:brandColor}}};
+    });
+    headerRow.height=24;
+
+    /* 資料列 */
+    rows.forEach((r,idx)=>{
+      const row=ws.addRow(cols.map(k=>r[k]??''));
+      row.eachCell((cell,i)=>{
+        cell.font={name:'Microsoft JhengHei',size:10};
+        cell.alignment={vertical:'middle',wrapText:true};
+        if(typeof cell.value==='number') cell.alignment.horizontal='right';
+        if(idx%2===1) cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:brandLight}};
+        cell.border={bottom:{style:'hair',color:{argb:'DCEEF1'}}};
+      });
+    });
+
+    /* 自動欄寬 */
+    cols.forEach((k,i)=>{
+      let max=k.length*2;
+      rows.forEach(r=>{const v=String(r[k]||'');if(v.length*1.5>max) max=v.length*1.5;});
+      ws.getColumn(i+1).width=Math.max(Math.min(max+4,50),8);
+    });
+
+    /* 凍結表頭 */
+    ws.views=[{state:'frozen',ySplit:2}];
+
+    const buf=await wb.xlsx.writeBuffer();
+    saveAs(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),fileName);
+
+   }catch(excelErr){
+    console.error('ExcelJS error:',excelErr);
+    alert('Excel 下載失敗，改用基本版下載');
+    /* 備用 SheetJS */
+    const ws2=XLSX.utils.json_to_sheet(rows);
+    const wb2=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb2,ws2,'庫存');
+    XLSX.writeFile(wb2,fileName);
+   }
+  } else {
+    /* ---- 備用 SheetJS 版 ---- */
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const colKeys=Object.keys(rows[0]);
+    ws['!cols']=colKeys.map(k=>{let max=k.length;rows.forEach(r=>{const v=String(r[k]||'');if(v.length>max)max=v.length;});return{wch:Math.min(max+4,50)};});
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'庫存');
+    XLSX.writeFile(wb,fileName);
+  }
+}
+
+/* ===== 下載 PDF ===== */
+function downloadPDF(viewType){
+  const rows=getExportData(viewType);
+  if(!rows.length){alert('目前沒有資料可下載');return;}
+  const today=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const title=VIEW_TITLES[viewType]||'庫存';
+  const cols=Object.keys(rows[0]);
+  const isWide=cols.length>5;
+
+  /* 建立列印用的 HTML 頁面 */
+  const dateStr=`${today.slice(0,4)}/${today.slice(4,6)}/${today.slice(6)}`;
+  const printWin=window.open('','_blank','width=960,height=700');
+  printWin.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>淨淨_${title}_${today}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page{size:${isWide?'landscape':'portrait'};margin:12mm 15mm;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;color:#1F2937;padding:0;}
+
+/* 頂部品牌色條 */
+.brand-bar{background:linear-gradient(135deg,#1A8597 0%,#2BA8BD 50%,#5BC8D8 100%);height:6px;width:100%;}
+
+/* 標題區 */
+.header{padding:20px 28px 16px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid #DCEEF1;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.header-logo{width:40px;height:50px;object-fit:contain;flex-shrink:0;}
+.header-text{display:flex;flex-direction:column;gap:4px;}
+.header-text .brand{font-size:10px;color:#5BC8D8;font-weight:600;letter-spacing:.15em;text-transform:uppercase;}
+.header-text h1{font-size:20px;color:#1A8597;font-weight:700;letter-spacing:.03em;}
+.header-right{text-align:right;display:flex;flex-direction:column;gap:2px;}
+.header-right .date{font-size:11px;color:#6B7280;font-weight:500;}
+
+/* 表格 */
+.table-wrap{padding:12px 28px 20px;}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:10.5px;border:1px solid #DCEEF1;border-radius:8px;overflow:hidden;}
+thead tr{background:linear-gradient(135deg,#1A8597,#2BA8BD);}
+th{color:white;padding:9px 12px;text-align:center;font-weight:600;font-size:10.5px;letter-spacing:.04em;border-right:1px solid rgba(255,255,255,.15);}
+th:last-child{border-right:none;}
+td{padding:7px 12px;border-bottom:1px solid #EEF2F3;font-size:10px;}
+tbody tr:nth-child(even){background:#F5FBFC;}
+tbody tr:last-child td{border-bottom:none;}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500;}
+td.cat{color:#1A8597;font-weight:600;font-size:9.5px;}
+td.barcode{font-family:'Courier New',monospace;font-size:9.5px;color:#64748B;}
+
+/* 低庫存 / 效期標記 */
+td.stock-low{color:#DC2626;font-weight:700;}
+td.exp-warn{color:#D97706;}
+td.exp-urgent{color:#DC2626;font-weight:600;}
+
+/* 頁尾 */
+.footer{padding:10px 28px;border-top:1.5px solid #DCEEF1;display:flex;justify-content:space-between;font-size:8.5px;color:#9CA3AF;}
+.footer .brand-text{color:#5BC8D8;font-weight:600;letter-spacing:.08em;}
+
+/* 列印提示 */
+.print-hint{text-align:center;padding:14px;background:#FFF9E6;border-radius:8px;margin:16px 28px;font-size:12px;color:#92400E;}
+@media print{
+  .print-hint{display:none!important;}
+  .brand-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  thead tr{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  tbody tr:nth-child(even){-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  thead{display:table-header-group;}
+}
+</style></head><body>
+<div class="brand-bar"></div>
+<div class="header">
+  <div class="header-left">
+    <img class="header-logo" src="${LOGO_B64}" alt="淨淨">
+    <div class="header-text">
+      <span class="brand">CLEAN CLEAN</span>
+      <h1>${title}</h1>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="date">資料日期：${dateStr}</span>
+  </div>
+</div>
+<div class="print-hint">📄 按 Ctrl+P 或等待列印視窗，選擇「另存為 PDF」即可下載</div>
+<div class="table-wrap">
+<table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>
+${rows.map(r=>'<tr>'+cols.map(k=>{
+  const v=r[k]??'';
+  const isNum=typeof v==='number';
+  let cls='';
+  if(k==='分類') cls=' class="cat"';
+  else if(k==='條碼') cls=' class="barcode"';
+  else if(isNum && (k.includes('庫存')||k==='合計')){
+    cls = v<=50 && v>0 ? ' class="num stock-low"' : ' class="num"';
+  }
+  else if(isNum) cls=' class="num"';
+  return '<td'+cls+'>'+((isNum&&v)?v.toLocaleString():v)+'</td>';
+}).join('')+'</tr>').join('\n')}
+</tbody></table>
+</div>
+<div class="footer">
+  <span class="brand-text">淨淨 CLEAN CLEAN</span>
+  <span>庫存查詢系統　｜　列印日期：${new Date().toLocaleDateString('zh-TW')}</span>
+</div>
+<script>
+window.onload=function(){
+  // Show print dialog after fonts load
+  document.fonts.ready.then(function(){
+    setTimeout(function(){window.print();},500);
   });
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'庫存');
-  XLSX.writeFile(wb,fileName);
+};
+<\/script>
+</body></html>`);
+  printWin.document.close();
 }
 
 function goHome(){
@@ -1298,6 +1460,18 @@ function goHome(){
 })();
 
 /* ===== 公告欄展開/收起 ===== */
+function toggleBulletinImportant(){
+  const list = document.getElementById('bulletinListImportant');
+  const btn = document.getElementById('bulletinToggleImportant');
+  if(list.style.maxHeight !== 'none'){
+    list.style.maxHeight = 'none';
+    btn.textContent = '收起 ▴';
+  } else {
+    list.style.maxHeight = '108px';
+    list.scrollTop = 0;
+    btn.textContent = '展開全部 ▾';
+  }
+}
 function toggleBulletin(){
   const list = document.getElementById('bulletinListSystem');
   const btn = document.getElementById('bulletinToggle');

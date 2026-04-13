@@ -2054,6 +2054,12 @@ function reqHideFormAndShowList(){
   reqLoadList(true);
 }
 
+// 快取：localStorage 持久化 + 記憶體快取
+let _reqCache = null;
+let _reqCacheTime = 0;
+const REQ_CACHE_MS = 120000; // 2 分鐘快取
+try{ const c=localStorage.getItem('reqCache'); if(c){const p=JSON.parse(c);_reqCache=p.data;_reqCacheTime=p.time;} }catch(e){}
+
 // 申請人下拉選單：從 localStorage + 申請紀錄載入
 function reqLoadApplicants(){
   const names = new Set(JSON.parse(localStorage.getItem('reqApplicants')||'[]'));
@@ -2219,12 +2225,6 @@ function reqResetForm(){
   reqItemIdx = 1;
   reqLoadApplicants();
 }
-
-// 快取：localStorage 持久化 + 記憶體快取
-let _reqCache = null;
-let _reqCacheTime = 0;
-const REQ_CACHE_MS = 120000; // 2 分鐘快取
-try{ const c=localStorage.getItem('reqCache'); if(c){const p=JSON.parse(c);_reqCache=p.data;_reqCacheTime=p.time;} }catch(e){}
 
 // 頁面載入時背景更新快取
 if(APPS_SCRIPT_URL){

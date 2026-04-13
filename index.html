@@ -64,7 +64,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .req-badge.st-rejected{background:#FEE2E2;color:#991B1B;}
 .req-card-info{font-size:.82rem;color:var(--text-mid);margin-bottom:6px;}
 .req-card-items{margin:6px 0;border-top:1px solid #f0f4f5;padding-top:6px;}
-.req-card-items table{width:100%;font-size:.8rem;border-collapse:collapse;}
+.req-card-items table{width:100%;font-size:.8rem;border-collapse:collapse;table-layout:fixed;}
+.req-card-items th:nth-child(1),.req-card-items td:nth-child(1){width:50%;}
+.req-card-items th:nth-child(2),.req-card-items td:nth-child(2){width:30%;}
+.req-card-items th:nth-child(3),.req-card-items td:nth-child(3){width:20%;text-align:right;}
 .req-card-items th{text-align:left;color:var(--text-light);font-weight:500;padding:4px 8px;}
 .req-card-items td{padding:4px 8px;}
 .req-card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
@@ -2269,8 +2272,8 @@ async function reqLoadList(forceRefresh){
       return '<div class="req-card">' +
         '<div class="req-card-header"><div><span class="req-card-id">'+g.id+'</span> <span class="req-card-date">'+g.date+'</span></div><span class="req-badge '+badgeClass+'">'+g.status+'</span></div>' +
         '<div class="req-card-info">申請人：'+g.applicant+' ｜ 用途：'+g.purpose+(g.description?' ｜ 說明：'+g.description:'')+(g.deliveryDate?' ｜ 預計交貨：'+g.deliveryDate:'')+(g.note?' ｜ 備註：'+g.note:'')+'</div>' +
-        '<div class="req-card-items"><table><tr><th>品名</th><th>條碼</th><th>數量</th></tr>' +
-        g.rows.map(r=>'<tr><td>'+r.name+'</td><td style="color:#9CA3AF;">'+r.barcode+'</td><td style="font-weight:700;">'+r.qty+'</td></tr>').join('') +
+        '<div class="req-card-items"><table><tr><th>品名</th><th>條碼</th><th style="text-align:right;">數量</th></tr>' +
+        g.rows.map(r=>'<tr><td>'+r.name+'</td><td style="color:#9CA3AF;">'+r.barcode+'</td><td style="font-weight:700;text-align:right;">'+r.qty+'</td></tr>').join('') +
         '</table></div>' +
         timeline +
         (actions ? '<div class="req-card-actions">'+actions+'</div>' : '') +

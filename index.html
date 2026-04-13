@@ -2199,13 +2199,18 @@ function reqResetForm(){
   reqItemIdx = 1;
 }
 
+// 快取：localStorage 持久化 + 記憶體快取
 let _reqCache = null;
 let _reqCacheTime = 0;
-const REQ_CACHE_MS = 60000; // 60 秒快取
+const REQ_CACHE_MS = 120000; // 2 分鐘快取
+try{ const c=localStorage.getItem('reqCache'); if(c){const p=JSON.parse(c);_reqCache=p.data;_reqCacheTime=p.time;} }catch(e){}
 
-// 頁面載入時預先抓取申請紀錄
+// 頁面載入時背景更新快取
 if(APPS_SCRIPT_URL){
-  fetch(APPS_SCRIPT_URL+'?action=getAll').then(r=>r.json()).then(j=>{_reqCache=j;_reqCacheTime=Date.now();}).catch(()=>{});
+  fetch(APPS_SCRIPT_URL+'?action=getAll').then(r=>r.json()).then(j=>{
+    _reqCache=j;_reqCacheTime=Date.now();
+    try{localStorage.setItem('reqCache',JSON.stringify({data:j,time:_reqCacheTime}));}catch(e){}
+  }).catch(()=>{});
 }
 
 async function reqLoadList(forceRefresh){
@@ -2219,6 +2224,14 @@ async function reqLoadList(forceRefresh){
   const now = Date.now();
   if(!forceRefresh && _reqCache && (now - _reqCacheTime < REQ_CACHE_MS)){
     json = _reqCache;
+  } else if(!forceRefresh && _reqCache) {
+    // 快取過期但有舊資料，先顯示舊的，背景更新
+    json = _reqCache;
+    fetch(APPS_SCRIPT_URL+'?action=getAll').then(r=>r.json()).then(j=>{
+      _reqCache=j;_reqCacheTime=Date.now();
+      try{localStorage.setItem('reqCache',JSON.stringify({data:j,time:_reqCacheTime}));}catch(e){}
+      reqLoadList();
+    }).catch(()=>{});
   } else {
     body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">載入中...</div>';
     try{
@@ -2226,6 +2239,7 @@ async function reqLoadList(forceRefresh){
       json = await resp.json();
       _reqCache = json;
       _reqCacheTime = now;
+      try{localStorage.setItem('reqCache',JSON.stringify({data:json,time:now}));}catch(e){}
     }catch(e){
       body.innerHTML='<div style="text-align:center;padding:40px;color:#EF4444;">載入失敗：'+e.message+'</div>';
       return;

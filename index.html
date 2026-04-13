@@ -446,7 +446,8 @@ tbody tr.row-warn{background:#fffdf0;}
 
       <div class="req-field">
         <label>申請人</label>
-        <input type="text" id="reqApplicant" placeholder="請輸入姓名" />
+        <input type="text" id="reqApplicant" list="reqApplicantList" placeholder="選擇或輸入姓名" />
+        <datalist id="reqApplicantList"></datalist>
       </div>
 
       <div style="display:flex;gap:12px;">
@@ -2053,6 +2054,23 @@ function reqHideFormAndShowList(){
   reqLoadList(true);
 }
 
+// 申請人下拉選單：從 localStorage + 申請紀錄載入
+function reqLoadApplicants(){
+  const names = new Set(JSON.parse(localStorage.getItem('reqApplicants')||'[]'));
+  if(_reqCache && _reqCache.data){
+    _reqCache.data.forEach(r=>{ if(r['申請人']) names.add(r['申請人']); });
+  }
+  document.querySelectorAll('#reqApplicantList').forEach(dl=>{
+    dl.innerHTML = [...names].sort().map(n=>'<option value="'+n+'">').join('');
+  });
+}
+function reqSaveApplicant(name){
+  if(!name) return;
+  const list = JSON.parse(localStorage.getItem('reqApplicants')||'[]');
+  if(!list.includes(name)){ list.push(name); localStorage.setItem('reqApplicants',JSON.stringify(list)); }
+}
+reqLoadApplicants();
+
 function reqSearchProduct(input){
   const q = input.value.trim().toLowerCase();
   const box = input.parentElement.querySelector('.req-search-results');
@@ -2147,6 +2165,8 @@ async function reqSubmit(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'submit', applicant, purpose, description, deliveryDate, note, items })
     });
+    reqSaveApplicant(applicant);
+    reqLoadApplicants();
     // 顯示成功頁面
     const formTab = document.getElementById('reqFormTab');
     let itemsHtml = items.map(it => '<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f4f5;">'+it.name+'</td><td style="padding:8px 12px;border-bottom:1px solid #f0f4f5;font-size:.75rem;color:#6B7280;">'+it.barcode+'</td><td style="padding:8px 12px;border-bottom:1px solid #f0f4f5;text-align:center;font-weight:600;">'+it.qty+'</td></tr>').join('');
@@ -2181,7 +2201,7 @@ function reqResetForm(){
   const formTab = document.getElementById('reqFormTab');
   formTab.innerHTML = '<div class="req-form-card">' +
     '<h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增申請</h3>' +
-    '<div class="req-field"><label>申請人</label><input type="text" id="reqApplicant" placeholder="請輸入姓名" /></div>' +
+    '<div class="req-field"><label>申請人</label><input type="text" id="reqApplicant" list="reqApplicantList" placeholder="選擇或輸入姓名" /><datalist id="reqApplicantList"></datalist></div>' +
     '<div style="display:flex;gap:12px;"><div class="req-field" style="flex:1;"><label>申請日期</label><input type="date" id="reqDate" value="'+new Date().toISOString().slice(0,10)+'" /></div><div class="req-field" style="flex:1;"><label>預計交貨日</label><input type="date" id="reqDeliveryDate" /></div></div>' +
     '<div class="req-field"><label>用途</label><select id="reqPurpose"><option value="">請選擇</option><option value="贊助">贊助</option><option value="長期合作">長期合作</option><option value="其他">其他</option></select></div>' +
     '<div class="req-field"><label>說明</label><textarea id="reqDescription" rows="2" placeholder="請填寫用途說明"></textarea></div>' +
@@ -2197,6 +2217,7 @@ function reqResetForm(){
     '<div style="margin-top:24px;display:flex;gap:12px;"><button class="req-submit-btn" onclick="reqSubmit()">送出申請</button></div>' +
     '<div id="reqMsg" class="req-msg"></div></div>';
   reqItemIdx = 1;
+  reqLoadApplicants();
 }
 
 // 快取：localStorage 持久化 + 記憶體快取

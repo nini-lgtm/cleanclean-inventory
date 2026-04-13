@@ -2201,7 +2201,12 @@ function reqResetForm(){
 
 let _reqCache = null;
 let _reqCacheTime = 0;
-const REQ_CACHE_MS = 30000; // 30 秒快取
+const REQ_CACHE_MS = 60000; // 60 秒快取
+
+// 頁面載入時預先抓取申請紀錄
+if(APPS_SCRIPT_URL){
+  fetch(APPS_SCRIPT_URL+'?action=getAll').then(r=>r.json()).then(j=>{_reqCache=j;_reqCacheTime=Date.now();}).catch(()=>{});
+}
 
 async function reqLoadList(forceRefresh){
   const body = document.getElementById('reqListBody');

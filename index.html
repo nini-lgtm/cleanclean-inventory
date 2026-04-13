@@ -58,6 +58,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .req-badge.st-pending{background:#FEF3C7;color:#92400E;}
 .req-badge.st-warehouse{background:#DBEAFE;color:#1E40AF;}
 .req-badge.st-approved{background:#D1FAE5;color:#065F46;}
+.req-badge.st-pending-ship{background:#FDE68A;color:#78350F;}
+.req-badge.st-shipped{background:#C4B5FD;color:#5B21B6;}
 .req-badge.st-complete{background:#E5E7EB;color:#374151;}
 .req-badge.st-rejected{background:#FEE2E2;color:#991B1B;}
 .req-card-info{font-size:.82rem;color:var(--text-mid);margin-bottom:6px;}
@@ -518,8 +520,10 @@ tbody tr.row-warn{background:#fffdf0;}
         <select id="reqFilterStatus" onchange="reqLoadList()">
           <option value="">全部狀態</option>
           <option value="待審核">待審核</option>
-          <option value="倉管已確認">倉管已確認</option>
-          <option value="已核准">已核准</option>
+          <option value="倉庫已確認">倉庫已確認</option>
+          <option value="主管已審核">主管已審核</option>
+          <option value="待出貨">待出貨</option>
+          <option value="已出貨">已出貨</option>
           <option value="已完成">已完成</option>
           <option value="已退回">已退回</option>
         </select>
@@ -2212,21 +2216,25 @@ async function reqLoadList(){
     }
 
     body.innerHTML = list.map(g=>{
-      const badgeClass = g.status==='待審核'?'st-pending': g.status==='倉管已確認'?'st-warehouse': g.status==='已核准'?'st-approved': g.status==='已完成'?'st-complete': g.status==='已退回'?'st-rejected':'';
+      const badgeClass = g.status==='待審核'?'st-pending': g.status==='倉庫已確認'?'st-warehouse': g.status==='主管已審核'?'st-approved': g.status==='待出貨'?'st-pending-ship': g.status==='已出貨'?'st-shipped': g.status==='已完成'?'st-complete': g.status==='已退回'?'st-rejected':'';
       let actions = '';
       if(g.status==='待審核'){
-        actions = '<button class="req-action-btn act-confirm" onclick="reqAction(\''+g.id+'\',\'warehouse\',\'倉管確認\')">✅ 倉管確認</button>' +
+        actions = '<button class="req-action-btn act-confirm" onclick="reqAction(\''+g.id+'\',\'warehouse\',\'倉庫確認\')">✅ 倉庫確認</button>' +
                   '<button class="req-action-btn act-reject" onclick="reqAction(\''+g.id+'\',\'reject\',\'退回\')">❌ 退回</button>';
-      } else if(g.status==='倉管已確認'){
-        actions = '<button class="req-action-btn act-approve" onclick="reqAction(\''+g.id+'\',\'manager\',\'主管核准\')">✅ 主管核准</button>' +
+      } else if(g.status==='倉庫已確認'){
+        actions = '<button class="req-action-btn act-approve" onclick="reqAction(\''+g.id+'\',\'manager\',\'主管審核\')">✅ 主管審核</button>' +
                   '<button class="req-action-btn act-reject" onclick="reqAction(\''+g.id+'\',\'reject\',\'退回\')">❌ 退回</button>';
-      } else if(g.status==='已核准'){
-        actions = '<button class="req-action-btn act-complete" onclick="reqAction(\''+g.id+'\',\'complete\',\'完成出貨\')">📦 完成出貨</button>';
+      } else if(g.status==='主管已審核'){
+        actions = '<button class="req-action-btn act-confirm" onclick="reqAction(\''+g.id+'\',\'pending_ship\',\'確認待出貨\')">📦 待出貨</button>';
+      } else if(g.status==='待出貨'){
+        actions = '<button class="req-action-btn act-approve" onclick="reqAction(\''+g.id+'\',\'shipped\',\'確認已出貨\')">🚚 已出貨</button>';
+      } else if(g.status==='已出貨'){
+        actions = '<button class="req-action-btn act-complete" onclick="reqAction(\''+g.id+'\',\'complete\',\'確認完成\')">✅ 已完成</button>';
       }
 
       let timeline = '';
-      if(g.warehouse) timeline += '<div style="font-size:.75rem;color:var(--text-light);">✅ 倉管：'+g.warehouse+' ('+g.warehouseDate+')</div>';
-      if(g.manager) timeline += '<div style="font-size:.75rem;color:var(--text-light);">✅ 主管：'+g.manager+' ('+g.managerDate+')</div>';
+      if(g.warehouse) timeline += '<div style="font-size:.75rem;color:var(--text-light);">✅ 倉庫確認：'+g.warehouse+' ('+g.warehouseDate+')</div>';
+      if(g.manager) timeline += '<div style="font-size:.75rem;color:var(--text-light);">✅ 主管審核：'+g.manager+' ('+g.managerDate+')</div>';
       if(g.rejectReason) timeline += '<div style="font-size:.75rem;color:#DC2626;">❌ 退回原因：'+g.rejectReason+'</div>';
 
       return '<div class="req-card">' +
@@ -2250,10 +2258,13 @@ function reqAction(reqId, step, title){
   document.getElementById('reqActionDetail').textContent =
     step==='warehouse' ? '確認庫存數量足夠，可以出貨' :
     step==='manager' ? '核准此申請' :
-    step==='complete' ? '確認已完成出貨' :
+    step==='pending_ship' ? '確認備貨完成，等待出貨' :
+    step==='shipped' ? '確認貨物已出貨' :
+    step==='complete' ? '確認此申請已全部完成' :
     step==='reject' ? '退回此申請' : '';
 
-  document.getElementById('reqActionConfirmerWrap').style.display = step==='reject' ? 'none' : '';
+  const needConfirmer = (step==='warehouse' || step==='manager');
+  document.getElementById('reqActionConfirmerWrap').style.display = needConfirmer ? '' : 'none';
   document.getElementById('reqActionReasonWrap').style.display = step==='reject' ? '' : 'none';
   document.getElementById('reqActionConfirmer').value = '';
   document.getElementById('reqActionReason').value = '';
@@ -2270,7 +2281,7 @@ async function reqDoAction(){
   const confirmer = document.getElementById('reqActionConfirmer').value.trim();
   const reason = document.getElementById('reqActionReason').value.trim();
 
-  if(step !== 'reject' && step !== 'complete' && !confirmer){
+  if((step === 'warehouse' || step === 'manager') && !confirmer){
     alert('請輸入確認人姓名');
     return;
   }

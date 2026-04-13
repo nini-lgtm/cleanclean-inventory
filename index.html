@@ -516,6 +516,7 @@ tbody tr.row-warn{background:#fffdf0;}
     <div class="req-list-header">
       <h3 style="color:var(--green-deep);">📑 申請紀錄</h3>
       <div class="req-filter-row">
+        <button class="dl-btn" onclick="reqShowTab('form')" style="background:var(--green-deep);color:white;">＋ 新增申請</button>
         <input type="text" id="reqFilterApplicant" placeholder="篩選申請人" oninput="reqLoadList()" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;width:120px;" />
         <select id="reqFilterStatus" onchange="reqLoadList()">
           <option value="">全部狀態</option>

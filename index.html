@@ -414,8 +414,8 @@ tbody tr.row-warn{background:#fffdf0;}
     </div>
     <div class="role-card" onclick="enterView('request')">
       <span class="icon">📋</span>
-      <h2>庫存申請</h2>
-      <p>公關品・大批出貨<br>三層審核流程<br>申請＆進度查詢</p>
+      <h2>公關品申請</h2>
+      <p>公關品申請<br>審核流程<br>申請＆進度查詢</p>
       <span class="enter-btn">進入 →</span>
     </div>
   </div>
@@ -426,7 +426,7 @@ tbody tr.row-warn{background:#fffdf0;}
 <div id="requestScreen" class="screen">
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← 返回首頁</button>
-    <span class="topbar-title">📋 庫存申請</span>
+    <span class="topbar-title">📋 公關品申請</span>
     <div class="dl-wrap">
       <button class="dl-btn" onclick="reqShowTab('form')">📝 新增申請</button>
       <button class="dl-btn" onclick="reqShowTab('list')">📑 申請紀錄</button>
@@ -436,7 +436,7 @@ tbody tr.row-warn{background:#fffdf0;}
   <!-- 新增申請表單 -->
   <div id="reqFormTab" class="req-tab active" style="padding:16px 24px;">
     <div class="req-form-card">
-      <h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增庫存申請</h3>
+      <h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增申請</h3>
 
       <div class="req-field">
         <label>申請人</label>
@@ -448,9 +448,6 @@ tbody tr.row-warn{background:#fffdf0;}
         <select id="reqPurpose">
           <option value="">請選擇</option>
           <option value="公關品">公關品</option>
-          <option value="大批出貨">大批出貨</option>
-          <option value="贈品">贈品</option>
-          <option value="展示品">展示品</option>
           <option value="其他">其他</option>
         </select>
       </div>
@@ -472,6 +469,10 @@ tbody tr.row-warn{background:#fffdf0;}
           <div class="req-field" style="flex:1.2;">
             <label>品名</label>
             <input type="text" class="req-name" readonly placeholder="自動帶入" />
+          </div>
+          <div class="req-field" style="flex:.8;">
+            <label>SKU</label>
+            <input type="text" class="req-sku" readonly placeholder="自動帶入" style="font-size:.75rem;color:#6B7280;" />
           </div>
           <div class="req-field" style="flex:.5;">
             <label>數量</label>
@@ -2028,6 +2029,7 @@ function reqSelectProduct(el){
   row.querySelector('.req-search').value = '';
   row.querySelector('.req-barcode').value = el.dataset.barcode;
   row.querySelector('.req-name').value = el.dataset.name;
+  if(row.querySelector('.req-sku')) row.querySelector('.req-sku').value = el.dataset.barcode;
   el.closest('.req-search-results').classList.remove('active');
   // 自動 focus 到數量
   row.querySelector('.req-qty').focus();
@@ -2041,6 +2043,8 @@ function reqAddItem(){
     '<div class="req-search-results"></div><input type="hidden" class="req-barcode" /></div>' +
     '<div class="req-field" style="flex:1.2;"><label>品名</label>' +
     '<input type="text" class="req-name" readonly placeholder="自動帶入" /></div>' +
+    '<div class="req-field" style="flex:.8;"><label>SKU</label>' +
+    '<input type="text" class="req-sku" readonly placeholder="自動帶入" style="font-size:.75rem;color:#6B7280;" /></div>' +
     '<div class="req-field" style="flex:.5;"><label>數量</label>' +
     '<input type="number" class="req-qty" min="1" placeholder="0" /></div>' +
     '<button class="req-remove-btn" onclick="reqRemoveItem(this)" title="移除">✕</button></div>';
@@ -2095,18 +2099,50 @@ async function reqSubmit(){
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action:'submit', applicant, purpose, note, items })
     });
-    reqShowMsg('success','申請已送出！');
-    // 清空表單
-    document.getElementById('reqApplicant').value='';
-    document.getElementById('reqPurpose').value='';
-    document.getElementById('reqNote').value='';
-    document.querySelectorAll('.req-item-row').forEach((row,i)=>{
-      if(i>0) row.remove();
-      else{ row.querySelector('.req-search').value=''; row.querySelector('.req-barcode').value=''; row.querySelector('.req-name').value=''; row.querySelector('.req-qty').value=''; }
-    });
+    // 顯示成功頁面
+    const formTab = document.getElementById('reqFormTab');
+    let itemsHtml = items.map(it => '<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f4f5;">'+it.name+'</td><td style="padding:8px 12px;border-bottom:1px solid #f0f4f5;font-size:.75rem;color:#6B7280;">'+it.barcode+'</td><td style="padding:8px 12px;border-bottom:1px solid #f0f4f5;text-align:center;font-weight:600;">'+it.qty+'</td></tr>').join('');
+    formTab.innerHTML = '<div class="req-form-card" style="text-align:center;">' +
+      '<div style="font-size:3rem;margin-bottom:12px;">✅</div>' +
+      '<h3 style="color:var(--green-deep);margin-bottom:8px;">申請已完成</h3>' +
+      '<p style="color:#6B7280;margin-bottom:24px;">請通知營運部夥伴確認</p>' +
+      '<div style="background:#F9FAFB;border-radius:12px;padding:16px;text-align:left;margin-bottom:20px;">' +
+      '<div style="display:flex;gap:24px;margin-bottom:12px;flex-wrap:wrap;">' +
+      '<div><span style="color:#9CA3AF;font-size:.75rem;">申請人</span><div style="font-weight:600;">'+applicant+'</div></div>' +
+      '<div><span style="color:#9CA3AF;font-size:.75rem;">用途</span><div style="font-weight:600;">'+purpose+'</div></div>' +
+      '<div><span style="color:#9CA3AF;font-size:.75rem;">日期</span><div style="font-weight:600;">'+new Date().toLocaleDateString('zh-TW')+'</div></div>' +
+      '</div>' +
+      (note ? '<div style="margin-bottom:12px;"><span style="color:#9CA3AF;font-size:.75rem;">備註</span><div>'+note+'</div></div>' : '') +
+      '<table style="width:100%;border-collapse:collapse;font-size:.85rem;">' +
+      '<tr style="background:var(--mint-light);"><th style="padding:8px 12px;text-align:left;">品名</th><th style="padding:8px 12px;text-align:left;">SKU</th><th style="padding:8px 12px;text-align:center;">數量</th></tr>' +
+      itemsHtml + '</table></div>' +
+      '<div style="display:flex;gap:12px;justify-content:center;">' +
+      '<button class="req-submit-btn" style="background:var(--mint);" onclick="reqResetForm()">繼續申請</button>' +
+      '<button class="req-submit-btn" style="background:#6B7280;" onclick="reqShowTab(\'list\')">查看申請紀錄</button>' +
+      '</div></div>';
   }catch(e){
     reqShowMsg('error','送出失敗：'+e.message);
   }
+}
+
+function reqResetForm(){
+  const formTab = document.getElementById('reqFormTab');
+  formTab.innerHTML = '<div class="req-form-card">' +
+    '<h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增申請</h3>' +
+    '<div class="req-field"><label>申請人</label><input type="text" id="reqApplicant" placeholder="請輸入姓名" /></div>' +
+    '<div class="req-field"><label>用途說明</label><select id="reqPurpose"><option value="">請選擇</option><option value="公關品">公關品</option><option value="其他">其他</option></select></div>' +
+    '<div class="req-field"><label>備註 <span style="font-weight:400;color:#9CA3AF;">(選填)</span></label><textarea id="reqNote" rows="2" placeholder="補充說明"></textarea></div>' +
+    '<h4 style="margin:20px 0 10px;color:var(--text);font-size:.9rem;">商品明細</h4>' +
+    '<div id="reqItems"><div class="req-item-row" data-idx="0">' +
+    '<div class="req-field" style="flex:2;"><label>搜尋商品（品名或條碼）</label><input type="text" class="req-search" placeholder="輸入品名或條碼搜尋..." oninput="reqSearchProduct(this)" /><div class="req-search-results"></div><input type="hidden" class="req-barcode" /></div>' +
+    '<div class="req-field" style="flex:1.2;"><label>品名</label><input type="text" class="req-name" readonly placeholder="自動帶入" /></div>' +
+    '<div class="req-field" style="flex:.8;"><label>SKU</label><input type="text" class="req-sku" readonly placeholder="自動帶入" style="font-size:.75rem;color:#6B7280;" /></div>' +
+    '<div class="req-field" style="flex:.5;"><label>數量</label><input type="number" class="req-qty" min="1" placeholder="0" /></div>' +
+    '<button class="req-remove-btn" onclick="reqRemoveItem(this)" title="移除">✕</button></div></div>' +
+    '<button class="req-add-btn" onclick="reqAddItem()">＋ 新增商品</button>' +
+    '<div style="margin-top:24px;display:flex;gap:12px;"><button class="req-submit-btn" onclick="reqSubmit()">送出申請</button></div>' +
+    '<div id="reqMsg" class="req-msg"></div></div>';
+  reqItemIdx = 1;
 }
 
 async function reqLoadList(){
@@ -2175,7 +2211,7 @@ function reqAction(reqId, step, title){
   document.getElementById('reqActionTitle').textContent = title + ' — ' + reqId;
   document.getElementById('reqActionDetail').textContent =
     step==='warehouse' ? '確認庫存數量足夠，可以出貨' :
-    step==='manager' ? '核准此庫存申請' :
+    step==='manager' ? '核准此公關品申請' :
     step==='complete' ? '確認已完成出貨' :
     step==='reject' ? '退回此申請' : '';
 

@@ -20,6 +20,59 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
+/* REQUEST FORM */
+.req-tab{display:none;}.req-tab.active{display:block;}
+.req-form-card{background:white;border-radius:18px;padding:24px;box-shadow:var(--shadow);max-width:800px;margin:0 auto;}
+.req-field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;position:relative;}
+.req-field label{font-size:.78rem;font-weight:600;color:var(--text-mid);}
+.req-field input,.req-field select,.req-field textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.88rem;font-family:inherit;outline:none;transition:border .2s;}
+.req-field input:focus,.req-field select:focus,.req-field textarea:focus{border-color:var(--mint);}
+.req-field input[readonly]{background:#f5f5f5;color:var(--text-mid);}
+.req-item-row{display:flex;gap:10px;align-items:flex-end;padding:12px;background:#f9fdfd;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;position:relative;}
+.req-remove-btn{background:none;border:none;color:#DC2626;font-size:1.1rem;cursor:pointer;padding:8px;border-radius:8px;align-self:center;margin-top:12px;}
+.req-remove-btn:hover{background:#FEE2E2;}
+.req-add-btn{background:var(--mint-light);color:var(--green-deep);border:1.5px dashed var(--mint);border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:.85rem;font-weight:600;font-family:inherit;transition:background .2s;}
+.req-add-btn:hover{background:var(--mint-mid);}
+.req-submit-btn{background:linear-gradient(135deg,var(--green-deep),var(--mint));color:white;border:none;border-radius:12px;padding:12px 32px;font-size:.92rem;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .15s;}
+.req-submit-btn:hover{transform:translateY(-2px);}
+.req-cancel-btn{background:#f3f4f6;color:var(--text-mid);border:1.5px solid var(--border);border-radius:12px;padding:12px 32px;font-size:.92rem;font-weight:500;cursor:pointer;font-family:inherit;}
+.req-msg{margin-top:12px;padding:10px 16px;border-radius:10px;font-size:.85rem;display:none;}
+.req-msg.success{display:block;background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0;}
+.req-msg.error{display:block;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;}
+.req-search-results{position:absolute;top:100%;left:0;right:0;background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.2);max-height:200px;overflow-y:auto;z-index:100;display:none;}
+.req-search-results.active{display:block;}
+.req-search-results .rsr-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:.82rem;}
+.req-search-results .rsr-item:hover{background:#f0fafb;}
+.req-search-results .rsr-item .rsr-name{font-weight:600;}
+.req-search-results .rsr-item .rsr-meta{color:#9CA3AF;font-size:.72rem;}
+.req-list-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.req-filter-row{display:flex;gap:10px;align-items:center;}
+.req-filter-row select{padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem;font-family:inherit;outline:none;}
+.req-list-body{display:flex;flex-direction:column;gap:12px;}
+.req-card{background:white;border-radius:16px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1.5px solid var(--border);}
+.req-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.req-card-id{font-weight:700;color:var(--green-deep);font-size:.9rem;}
+.req-card-date{font-size:.75rem;color:var(--text-light);}
+.req-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:600;}
+.req-badge.st-pending{background:#FEF3C7;color:#92400E;}
+.req-badge.st-warehouse{background:#DBEAFE;color:#1E40AF;}
+.req-badge.st-approved{background:#D1FAE5;color:#065F46;}
+.req-badge.st-complete{background:#E5E7EB;color:#374151;}
+.req-badge.st-rejected{background:#FEE2E2;color:#991B1B;}
+.req-card-info{font-size:.82rem;color:var(--text-mid);margin-bottom:6px;}
+.req-card-items{margin:10px 0;border-top:1px solid #f0f4f5;padding-top:10px;}
+.req-card-items table{width:100%;font-size:.8rem;border-collapse:collapse;}
+.req-card-items th{text-align:left;color:var(--text-light);font-weight:500;padding:4px 8px;}
+.req-card-items td{padding:4px 8px;}
+.req-card-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.req-action-btn{padding:6px 16px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:transform .1s;}
+.req-action-btn:hover{transform:translateY(-1px);}
+.req-action-btn.act-confirm{background:#DBEAFE;color:#1E40AF;}
+.req-action-btn.act-approve{background:#D1FAE5;color:#065F46;}
+.req-action-btn.act-complete{background:#E5E7EB;color:#374151;}
+.req-action-btn.act-reject{background:#FEE2E2;color:#991B1B;}
+@media(max-width:600px){.req-item-row{flex-direction:column;align-items:stretch;}.req-remove-btn{align-self:flex-end;margin-top:0;}}
+
 .screen{display:none;}
 .screen.active{display:block;}
 
@@ -357,8 +410,123 @@ tbody tr.row-warn{background:#fffdf0;}
       <p>箱入數・容量<br>單瓶尺寸 長×寬×高<br>出貨包裝參考</p>
       <span class="enter-btn">進入 →</span>
     </div>
+    <div class="role-card" onclick="enterView('request')">
+      <span class="icon">📋</span>
+      <h2>庫存申請</h2>
+      <p>公關品・大批出貨<br>三層審核流程<br>申請＆進度查詢</p>
+      <span class="enter-btn">進入 →</span>
+    </div>
   </div>
   <div class="home-footer">淨淨 × 2026 · 內部使用</div>
+</div>
+
+<!-- REQUEST (庫存申請) -->
+<div id="requestScreen" class="screen">
+  <div class="topbar">
+    <button class="back-btn" onclick="goHome()">← 返回首頁</button>
+    <span class="topbar-title">📋 庫存申請</span>
+    <div class="dl-wrap">
+      <button class="dl-btn" onclick="reqShowTab('form')">📝 新增申請</button>
+      <button class="dl-btn" onclick="reqShowTab('list')">📑 申請紀錄</button>
+    </div>
+  </div>
+
+  <!-- 新增申請表單 -->
+  <div id="reqFormTab" class="req-tab active" style="padding:16px 24px;">
+    <div class="req-form-card">
+      <h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增庫存申請</h3>
+
+      <div class="req-field">
+        <label>申請人</label>
+        <input type="text" id="reqApplicant" placeholder="請輸入姓名" />
+      </div>
+
+      <div class="req-field">
+        <label>用途說明</label>
+        <select id="reqPurpose">
+          <option value="">請選擇</option>
+          <option value="公關品">公關品</option>
+          <option value="大批出貨">大批出貨</option>
+          <option value="贈品">贈品</option>
+          <option value="展示品">展示品</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="req-field">
+        <label>備註 <span style="font-weight:400;color:#9CA3AF;">(選填)</span></label>
+        <textarea id="reqNote" rows="2" placeholder="補充說明"></textarea>
+      </div>
+
+      <h4 style="margin:20px 0 10px;color:var(--text);font-size:.9rem;">商品明細</h4>
+      <div id="reqItems">
+        <div class="req-item-row" data-idx="0">
+          <div class="req-field" style="flex:2;">
+            <label>搜尋商品（品名或條碼）</label>
+            <input type="text" class="req-search" placeholder="輸入品名或條碼搜尋..." oninput="reqSearchProduct(this)" />
+            <div class="req-search-results"></div>
+            <input type="hidden" class="req-barcode" />
+          </div>
+          <div class="req-field" style="flex:1.2;">
+            <label>品名</label>
+            <input type="text" class="req-name" readonly placeholder="自動帶入" />
+          </div>
+          <div class="req-field" style="flex:.5;">
+            <label>數量</label>
+            <input type="number" class="req-qty" min="1" placeholder="0" />
+          </div>
+          <button class="req-remove-btn" onclick="reqRemoveItem(this)" title="移除">✕</button>
+        </div>
+      </div>
+      <button class="req-add-btn" onclick="reqAddItem()">＋ 新增商品</button>
+
+      <div style="margin-top:24px;display:flex;gap:12px;">
+        <button class="req-submit-btn" onclick="reqSubmit()">送出申請</button>
+      </div>
+      <div id="reqMsg" class="req-msg"></div>
+    </div>
+  </div>
+
+  <!-- 申請紀錄列表 -->
+  <div id="reqListTab" class="req-tab" style="padding:16px 24px;">
+    <div class="req-list-header">
+      <h3 style="color:var(--green-deep);">📑 申請紀錄</h3>
+      <div class="req-filter-row">
+        <select id="reqFilterStatus" onchange="reqLoadList()">
+          <option value="">全部狀態</option>
+          <option value="待審核">待審核</option>
+          <option value="倉管已確認">倉管已確認</option>
+          <option value="已核准">已核准</option>
+          <option value="已完成">已完成</option>
+          <option value="已退回">已退回</option>
+        </select>
+        <button class="dl-btn" onclick="reqLoadList()">🔄 重新整理</button>
+      </div>
+    </div>
+    <div id="reqListBody" class="req-list-body">
+      <div style="text-align:center;padding:40px;color:#9CA3AF;">載入中...</div>
+    </div>
+  </div>
+
+  <!-- 審核 Modal -->
+  <div id="reqActionOverlay" class="pw-overlay">
+    <div class="pw-modal" style="max-width:420px;">
+      <h3 id="reqActionTitle" style="margin-bottom:12px;color:var(--green-deep);"></h3>
+      <div id="reqActionDetail" style="font-size:.85rem;color:var(--text-mid);margin-bottom:16px;"></div>
+      <div class="req-field" id="reqActionConfirmerWrap">
+        <label>確認人姓名</label>
+        <input type="text" id="reqActionConfirmer" placeholder="請輸入姓名" />
+      </div>
+      <div class="req-field" id="reqActionReasonWrap" style="display:none;">
+        <label>退回原因</label>
+        <textarea id="reqActionReason" rows="2" placeholder="請說明退回原因"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="req-submit-btn" onclick="reqDoAction()">確認</button>
+        <button class="req-cancel-btn" onclick="reqCloseAction()">取消</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MANAGER -->
@@ -1105,6 +1273,7 @@ function doEnterView(role){
   else if(role==='store'){ id='storeScreen'; cb=renderStore; }
   else if(role==='vendor'){ id='vendorScreen'; cb=renderVendor; }
   else if(role==='spec'){ id='specScreen'; cb=renderSpec; }
+  else if(role==='request'){ id='requestScreen'; cb=()=>{ reqShowTab('form'); reqLoadList(); }; }
   document.getElementById(id).classList.add('active');
   cb();
   window.scrollTo(0,0);
@@ -1818,7 +1987,235 @@ document.addEventListener('click', function(e){
   if(!e.target.closest('.home-search')){
     document.getElementById('homeSearchResults').classList.remove('active');
   }
+  // 關閉申請表搜尋結果
+  if(!e.target.closest('.req-item-row')){
+    document.querySelectorAll('.req-search-results').forEach(r=>r.classList.remove('active'));
+  }
 });
+
+/* ===== 庫存申請表 ===== */
+// ★★★ 請將此 URL 替換為你的 Google Apps Script 部署網址 ★★★
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyPN28mN8Akbf-PtfkLAkNmgvwwNYUdtzAtfYj06xKM87mhCMlrBYOnscrhMcLvrnpP/exec';
+
+let reqItemIdx = 1;
+let reqCurrentAction = {};
+
+function reqShowTab(tab){
+  document.querySelectorAll('.req-tab').forEach(t=>t.classList.remove('active'));
+  if(tab==='form') document.getElementById('reqFormTab').classList.add('active');
+  else{ document.getElementById('reqListTab').classList.add('active'); reqLoadList(); }
+}
+
+function reqSearchProduct(input){
+  const q = input.value.trim().toLowerCase();
+  const box = input.parentElement.querySelector('.req-search-results');
+  if(!q || q.length < 1){ box.classList.remove('active'); return; }
+  const results = DATA.filter(d=> d.name.toLowerCase().includes(q) || d.barcode.includes(q)).slice(0,10);
+  if(!results.length){ box.innerHTML='<div style="padding:12px;color:#9CA3AF;font-size:.82rem;">找不到商品</div>'; box.classList.add('active'); return; }
+  box.innerHTML = results.map(d=>{
+    const stock = d.stock || 0;
+    return '<div class="rsr-item" data-barcode="'+d.barcode+'" data-name="'+d.name+'" onclick="reqSelectProduct(this)">' +
+      '<div class="rsr-name">'+d.name+'</div>' +
+      '<div class="rsr-meta">'+d.barcode+' · 庫存 '+stock.toLocaleString()+'</div></div>';
+  }).join('');
+  box.classList.add('active');
+}
+
+function reqSelectProduct(el){
+  const row = el.closest('.req-item-row');
+  row.querySelector('.req-search').value = '';
+  row.querySelector('.req-barcode').value = el.dataset.barcode;
+  row.querySelector('.req-name').value = el.dataset.name;
+  el.closest('.req-search-results').classList.remove('active');
+  // 自動 focus 到數量
+  row.querySelector('.req-qty').focus();
+}
+
+function reqAddItem(){
+  const container = document.getElementById('reqItems');
+  const html = '<div class="req-item-row" data-idx="'+reqItemIdx+'">' +
+    '<div class="req-field" style="flex:2;"><label>搜尋商品</label>' +
+    '<input type="text" class="req-search" placeholder="輸入品名或條碼搜尋..." oninput="reqSearchProduct(this)" />' +
+    '<div class="req-search-results"></div><input type="hidden" class="req-barcode" /></div>' +
+    '<div class="req-field" style="flex:1.2;"><label>品名</label>' +
+    '<input type="text" class="req-name" readonly placeholder="自動帶入" /></div>' +
+    '<div class="req-field" style="flex:.5;"><label>數量</label>' +
+    '<input type="number" class="req-qty" min="1" placeholder="0" /></div>' +
+    '<button class="req-remove-btn" onclick="reqRemoveItem(this)" title="移除">✕</button></div>';
+  container.insertAdjacentHTML('beforeend', html);
+  reqItemIdx++;
+}
+
+function reqRemoveItem(btn){
+  const rows = document.querySelectorAll('.req-item-row');
+  if(rows.length <= 1) return; // 至少保留一列
+  btn.closest('.req-item-row').remove();
+}
+
+function reqShowMsg(type, text){
+  const el = document.getElementById('reqMsg');
+  el.className = 'req-msg ' + type;
+  el.textContent = text;
+  if(type==='success') setTimeout(()=>{ el.className='req-msg'; el.style.display='none'; }, 5000);
+}
+
+async function reqSubmit(){
+  if(!APPS_SCRIPT_URL){
+    reqShowMsg('error','尚未設定 Google Apps Script 網址，請先完成設定。');
+    return;
+  }
+  const applicant = document.getElementById('reqApplicant').value.trim();
+  const purpose = document.getElementById('reqPurpose').value;
+  const note = document.getElementById('reqNote').value.trim();
+
+  if(!applicant){ reqShowMsg('error','請輸入申請人姓名'); return; }
+  if(!purpose){ reqShowMsg('error','請選擇用途說明'); return; }
+
+  const items = [];
+  let valid = true;
+  document.querySelectorAll('.req-item-row').forEach(row=>{
+    const barcode = row.querySelector('.req-barcode').value;
+    const name = row.querySelector('.req-name').value;
+    const qty = parseInt(row.querySelector('.req-qty').value) || 0;
+    if(!barcode || !name){ valid = false; return; }
+    if(qty <= 0){ valid = false; return; }
+    items.push({ barcode, name, qty });
+  });
+
+  if(!valid || items.length===0){
+    reqShowMsg('error','請確認每��商品都已選取且數量大於 0');
+    return;
+  }
+
+  try{
+    const resp = await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'submit', applicant, purpose, note, items })
+    });
+    reqShowMsg('success','申請已送出！');
+    // 清空表單
+    document.getElementById('reqApplicant').value='';
+    document.getElementById('reqPurpose').value='';
+    document.getElementById('reqNote').value='';
+    document.querySelectorAll('.req-item-row').forEach((row,i)=>{
+      if(i>0) row.remove();
+      else{ row.querySelector('.req-search').value=''; row.querySelector('.req-barcode').value=''; row.querySelector('.req-name').value=''; row.querySelector('.req-qty').value=''; }
+    });
+  }catch(e){
+    reqShowMsg('error','送出失敗：'+e.message);
+  }
+}
+
+async function reqLoadList(){
+  const body = document.getElementById('reqListBody');
+  if(!APPS_SCRIPT_URL){
+    body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">尚未設定 Google Apps Script 網址</div>';
+    return;
+  }
+  body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">載入中...</div>';
+  try{
+    const resp = await fetch(APPS_SCRIPT_URL+'?action=getAll');
+    const json = await resp.json();
+    const filter = document.getElementById('reqFilterStatus').value;
+
+    // 按申請編號分組
+    const groups = {};
+    (json.data||[]).forEach(row=>{
+      const id = row['申請編號'];
+      if(!id) return;
+      if(filter && row['狀態'] !== filter) return;
+      if(!groups[id]) groups[id] = { id, rows:[], date:row['申請日期'], applicant:row['申請人'], purpose:row['用途說明'], status:row['狀態'], warehouse:row['倉管確認人'], warehouseDate:row['倉管確認日期'], manager:row['主管核准人'], managerDate:row['主管核准日期'], rejectReason:row['退回原因'], note:row['備註'] };
+      groups[id].rows.push({ barcode:row['商品編號'], name:row['品名'], qty:row['數量'] });
+    });
+
+    const list = Object.values(groups);
+    if(!list.length){
+      body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">沒有申請紀錄</div>';
+      return;
+    }
+
+    body.innerHTML = list.map(g=>{
+      const badgeClass = g.status==='待審核'?'st-pending': g.status==='倉管已確認'?'st-warehouse': g.status==='已核准'?'st-approved': g.status==='已完成'?'st-complete': g.status==='已退回'?'st-rejected':'';
+      let actions = '';
+      if(g.status==='待審核'){
+        actions = '<button class="req-action-btn act-confirm" onclick="reqAction(\''+g.id+'\',\'warehouse\',\'倉管確認\')">✅ 倉管確認</button>' +
+                  '<button class="req-action-btn act-reject" onclick="reqAction(\''+g.id+'\',\'reject\',\'退回\')">❌ 退回</button>';
+      } else if(g.status==='倉管已確認'){
+        actions = '<button class="req-action-btn act-approve" onclick="reqAction(\''+g.id+'\',\'manager\',\'主管核准\')">✅ 主管核准</button>' +
+                  '<button class="req-action-btn act-reject" onclick="reqAction(\''+g.id+'\',\'reject\',\'退回\')">❌ 退回</button>';
+      } else if(g.status==='已核准'){
+        actions = '<button class="req-action-btn act-complete" onclick="reqAction(\''+g.id+'\',\'complete\',\'完成出貨\')">📦 完成出貨</button>';
+      }
+
+      let timeline = '';
+      if(g.warehouse) timeline += '<div style="font-size:.75rem;color:var(--text-light);">✅ 倉管：'+g.warehouse+' ('+g.warehouseDate+')</div>';
+      if(g.manager) timeline += '<div style="font-size:.75rem;color:var(--text-light);">✅ 主管：'+g.manager+' ('+g.managerDate+')</div>';
+      if(g.rejectReason) timeline += '<div style="font-size:.75rem;color:#DC2626;">❌ 退回原因：'+g.rejectReason+'</div>';
+
+      return '<div class="req-card">' +
+        '<div class="req-card-header"><div><span class="req-card-id">'+g.id+'</span> <span class="req-card-date">'+g.date+'</span></div><span class="req-badge '+badgeClass+'">'+g.status+'</span></div>' +
+        '<div class="req-card-info">申請人：'+g.applicant+' ｜ 用途：'+g.purpose+(g.note?' ｜ 備註：'+g.note:'')+'</div>' +
+        '<div class="req-card-items"><table><tr><th>品名</th><th>條碼</th><th>數量</th></tr>' +
+        g.rows.map(r=>'<tr><td>'+r.name+'</td><td style="color:#9CA3AF;">'+r.barcode+'</td><td style="font-weight:700;">'+r.qty+'</td></tr>').join('') +
+        '</table></div>' +
+        timeline +
+        (actions ? '<div class="req-card-actions">'+actions+'</div>' : '') +
+        '</div>';
+    }).join('');
+  }catch(e){
+    body.innerHTML='<div style="text-align:center;padding:40px;color:#DC2626;">載入失敗：'+e.message+'</div>';
+  }
+}
+
+function reqAction(reqId, step, title){
+  reqCurrentAction = { reqId, step };
+  document.getElementById('reqActionTitle').textContent = title + ' — ' + reqId;
+  document.getElementById('reqActionDetail').textContent =
+    step==='warehouse' ? '確認庫存數量足夠，可以出貨' :
+    step==='manager' ? '核准此庫存申請' :
+    step==='complete' ? '確認已完成出貨' :
+    step==='reject' ? '退回此申請' : '';
+
+  document.getElementById('reqActionConfirmerWrap').style.display = step==='reject' ? 'none' : '';
+  document.getElementById('reqActionReasonWrap').style.display = step==='reject' ? '' : 'none';
+  document.getElementById('reqActionConfirmer').value = '';
+  document.getElementById('reqActionReason').value = '';
+  document.getElementById('reqActionOverlay').classList.add('active');
+}
+
+function reqCloseAction(){
+  document.getElementById('reqActionOverlay').classList.remove('active');
+  reqCurrentAction = {};
+}
+
+async function reqDoAction(){
+  const {reqId, step} = reqCurrentAction;
+  const confirmer = document.getElementById('reqActionConfirmer').value.trim();
+  const reason = document.getElementById('reqActionReason').value.trim();
+
+  if(step !== 'reject' && step !== 'complete' && !confirmer){
+    alert('請輸入確認人姓名');
+    return;
+  }
+  if(step === 'reject' && !reason){
+    alert('請輸入退回原因');
+    return;
+  }
+
+  try{
+    await fetch(APPS_SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'updateStatus', reqId, step, confirmer, reason })
+    });
+    reqCloseAction();
+    // no-cors 無法讀回應，等一下再重新載入
+    setTimeout(()=>reqLoadList(), 1500);
+  }catch(e){
+    alert('操作失敗：'+e.message);
+  }
+}
 
 </script>
 

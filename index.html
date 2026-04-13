@@ -49,9 +49,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .req-list-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
 .req-filter-row{display:flex;gap:10px;align-items:center;}
 .req-filter-row select{padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem;font-family:inherit;outline:none;}
-.req-list-body{display:flex;flex-direction:column;gap:12px;}
-.req-card{background:white;border-radius:16px;padding:18px 20px;box-shadow:0 2px 10px rgba(0,0,0,.06);border:1.5px solid var(--border);}
-.req-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.req-list-body{display:flex;flex-direction:column;gap:6px;}
+.req-card{background:white;border-radius:12px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,.05);border:1px solid var(--border);}
+.req-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px;}
 .req-card-id{font-weight:700;color:var(--green-deep);font-size:.9rem;}
 .req-card-date{font-size:.75rem;color:var(--text-light);}
 .req-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:600;}
@@ -63,11 +63,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .req-badge.st-complete{background:#E5E7EB;color:#374151;}
 .req-badge.st-rejected{background:#FEE2E2;color:#991B1B;}
 .req-card-info{font-size:.82rem;color:var(--text-mid);margin-bottom:6px;}
-.req-card-items{margin:10px 0;border-top:1px solid #f0f4f5;padding-top:10px;}
+.req-card-items{margin:6px 0;border-top:1px solid #f0f4f5;padding-top:6px;}
 .req-card-items table{width:100%;font-size:.8rem;border-collapse:collapse;}
 .req-card-items th{text-align:left;color:var(--text-light);font-weight:500;padding:4px 8px;}
 .req-card-items td{padding:4px 8px;}
-.req-card-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.req-card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
 .req-action-btn{padding:6px 16px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:transform .1s;}
 .req-action-btn:hover{transform:translateY(-1px);}
 .req-action-btn.act-confirm{background:#DBEAFE;color:#1E40AF;}
@@ -437,7 +437,7 @@ tbody tr.row-warn{background:#fffdf0;}
   </div>
 
   <!-- 新增申請表單 -->
-  <div id="reqFormTab" class="req-tab active" style="padding:16px 24px;">
+  <div id="reqFormTab" class="req-tab" style="padding:16px 24px;">
     <div class="req-form-card">
       <h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增申請</h3>
 
@@ -1300,7 +1300,7 @@ function doEnterView(role){
   else if(role==='store'){ id='storeScreen'; cb=renderStore; }
   else if(role==='vendor'){ id='vendorScreen'; cb=renderVendor; }
   else if(role==='spec'){ id='specScreen'; cb=renderSpec; }
-  else if(role==='request'){ id='requestScreen'; cb=()=>{ reqShowTab('form'); reqLoadList(); const d=document.getElementById('reqDate'); if(d&&!d.value) d.value=new Date().toISOString().slice(0,10); }; }
+  else if(role==='request'){ id='requestScreen'; cb=()=>{ reqShowTab('list'); const d=document.getElementById('reqDate'); if(d&&!d.value) d.value=new Date().toISOString().slice(0,10); }; }
   document.getElementById(id).classList.add('active');
   cb();
   window.scrollTo(0,0);
@@ -2028,9 +2028,12 @@ let reqItemIdx = 1;
 let reqCurrentAction = {};
 
 function reqShowTab(tab){
+  const formTab = document.getElementById('reqFormTab');
   if(tab==='form'){
-    document.getElementById('reqFormTab').classList.add('active');
-    document.getElementById('reqFormTab').scrollIntoView({behavior:'smooth'});
+    formTab.classList.toggle('active');
+    if(formTab.classList.contains('active')){
+      formTab.scrollIntoView({behavior:'smooth'});
+    }
   } else {
     document.getElementById('reqListTab').scrollIntoView({behavior:'smooth'});
   }

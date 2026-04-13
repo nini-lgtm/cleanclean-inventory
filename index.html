@@ -415,8 +415,8 @@ tbody tr.row-warn{background:#fffdf0;}
     </div>
     <div class="role-card" onclick="enterView('request')">
       <span class="icon">📋</span>
-      <h2>公關品申請</h2>
-      <p>公關品申請<br>審核流程<br>申請＆進度查詢</p>
+      <h2>大量公關品</h2>
+      <p>贊助・長期合作<br>審核流程<br>申請＆進度查詢</p>
       <span class="enter-btn">進入 →</span>
     </div>
   </div>
@@ -427,7 +427,7 @@ tbody tr.row-warn{background:#fffdf0;}
 <div id="requestScreen" class="screen">
   <div class="topbar">
     <button class="back-btn" onclick="goHome()">← 返回首頁</button>
-    <span class="topbar-title">📋 公關品申請</span>
+    <span class="topbar-title">📋 大量公關品</span>
     <div class="dl-wrap">
       <button class="dl-btn" onclick="reqShowTab('form')">📝 新增申請</button>
       <button class="dl-btn" onclick="reqShowTab('list')">📑 申請紀錄</button>
@@ -459,7 +459,8 @@ tbody tr.row-warn{background:#fffdf0;}
         <label>用途</label>
         <select id="reqPurpose">
           <option value="">請選擇</option>
-          <option value="公關品">公關品</option>
+          <option value="贊助">贊助</option>
+          <option value="長期合作">長期合作</option>
           <option value="其他">其他</option>
         </select>
       </div>
@@ -2164,7 +2165,7 @@ function reqResetForm(){
     '<h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增申請</h3>' +
     '<div class="req-field"><label>申請人</label><input type="text" id="reqApplicant" placeholder="請輸入姓名" /></div>' +
     '<div style="display:flex;gap:12px;"><div class="req-field" style="flex:1;"><label>申請日期</label><input type="date" id="reqDate" value="'+new Date().toISOString().slice(0,10)+'" /></div><div class="req-field" style="flex:1;"><label>預計交貨日</label><input type="date" id="reqDeliveryDate" /></div></div>' +
-    '<div class="req-field"><label>用途</label><select id="reqPurpose"><option value="">請選擇</option><option value="公關品">公關品</option><option value="其他">其他</option></select></div>' +
+    '<div class="req-field"><label>用途</label><select id="reqPurpose"><option value="">請選擇</option><option value="贊助">贊助</option><option value="長期合作">長期合作</option><option value="其他">其他</option></select></div>' +
     '<div class="req-field"><label>說明</label><textarea id="reqDescription" rows="2" placeholder="請填寫用途說明"></textarea></div>' +
     '<div class="req-field"><label>備註 <span style="font-weight:400;color:#9CA3AF;">(選填)</span></label><textarea id="reqNote" rows="2" placeholder="補充說明"></textarea></div>' +
     '<h4 style="margin:20px 0 10px;color:var(--text);font-size:.9rem;">商品明細</h4>' +
@@ -2248,7 +2249,7 @@ function reqAction(reqId, step, title){
   document.getElementById('reqActionTitle').textContent = title + ' — ' + reqId;
   document.getElementById('reqActionDetail').textContent =
     step==='warehouse' ? '確認庫存數量足夠，可以出貨' :
-    step==='manager' ? '核准此公關品申請' :
+    step==='manager' ? '核准此申請' :
     step==='complete' ? '確認已完成出貨' :
     step==='reject' ? '退回此申請' : '';
 

@@ -444,13 +444,29 @@ tbody tr.row-warn{background:#fffdf0;}
         <input type="text" id="reqApplicant" placeholder="請輸入姓名" />
       </div>
 
+      <div style="display:flex;gap:12px;">
+        <div class="req-field" style="flex:1;">
+          <label>申請日期</label>
+          <input type="date" id="reqDate" />
+        </div>
+        <div class="req-field" style="flex:1;">
+          <label>預計交貨日</label>
+          <input type="date" id="reqDeliveryDate" />
+        </div>
+      </div>
+
       <div class="req-field">
-        <label>用途說明</label>
+        <label>用途</label>
         <select id="reqPurpose">
           <option value="">請選擇</option>
           <option value="公關品">公關品</option>
           <option value="其他">其他</option>
         </select>
+      </div>
+
+      <div class="req-field">
+        <label>說明</label>
+        <textarea id="reqDescription" rows="2" placeholder="請填寫用途說明"></textarea>
       </div>
 
       <div class="req-field">
@@ -497,6 +513,7 @@ tbody tr.row-warn{background:#fffdf0;}
     <div class="req-list-header">
       <h3 style="color:var(--green-deep);">📑 申請紀錄</h3>
       <div class="req-filter-row">
+        <input type="text" id="reqFilterApplicant" placeholder="篩選申請人" oninput="reqLoadList()" style="padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;width:120px;" />
         <select id="reqFilterStatus" onchange="reqLoadList()">
           <option value="">全部狀態</option>
           <option value="待審核">待審核</option>
@@ -1278,7 +1295,7 @@ function doEnterView(role){
   else if(role==='store'){ id='storeScreen'; cb=renderStore; }
   else if(role==='vendor'){ id='vendorScreen'; cb=renderVendor; }
   else if(role==='spec'){ id='specScreen'; cb=renderSpec; }
-  else if(role==='request'){ id='requestScreen'; cb=()=>{ reqShowTab('form'); reqLoadList(); }; }
+  else if(role==='request'){ id='requestScreen'; cb=()=>{ reqShowTab('form'); reqLoadList(); const d=document.getElementById('reqDate'); if(d&&!d.value) d.value=new Date().toISOString().slice(0,10); }; }
   document.getElementById(id).classList.add('active');
   cb();
   window.scrollTo(0,0);
@@ -2080,10 +2097,14 @@ async function reqSubmit(){
   }
   const applicant = document.getElementById('reqApplicant').value.trim();
   const purpose = document.getElementById('reqPurpose').value;
+  const description = document.getElementById('reqDescription').value.trim();
+  const reqDate = document.getElementById('reqDate').value;
+  const deliveryDate = document.getElementById('reqDeliveryDate').value;
   const note = document.getElementById('reqNote').value.trim();
 
   if(!applicant){ reqShowMsg('error','請輸入申請人姓名'); return; }
-  if(!purpose){ reqShowMsg('error','請選擇用途說明'); return; }
+  if(!purpose){ reqShowMsg('error','請選擇用途'); return; }
+  if(!description){ reqShowMsg('error','請填寫說明'); return; }
 
   const items = [];
   let valid = true;
@@ -2105,7 +2126,7 @@ async function reqSubmit(){
     const resp = await fetch(APPS_SCRIPT_URL, {
       method:'POST', mode:'no-cors',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'submit', applicant, purpose, note, items })
+      body: JSON.stringify({ action:'submit', applicant, purpose, description, deliveryDate, note, items })
     });
     // 顯示成功頁面
     const formTab = document.getElementById('reqFormTab');
@@ -2118,8 +2139,10 @@ async function reqSubmit(){
       '<div style="display:flex;gap:24px;margin-bottom:12px;flex-wrap:wrap;">' +
       '<div><span style="color:#9CA3AF;font-size:.75rem;">申請人</span><div style="font-weight:600;">'+applicant+'</div></div>' +
       '<div><span style="color:#9CA3AF;font-size:.75rem;">用途</span><div style="font-weight:600;">'+purpose+'</div></div>' +
-      '<div><span style="color:#9CA3AF;font-size:.75rem;">日期</span><div style="font-weight:600;">'+new Date().toLocaleDateString('zh-TW')+'</div></div>' +
+      '<div><span style="color:#9CA3AF;font-size:.75rem;">申請日期</span><div style="font-weight:600;">'+(reqDate||new Date().toLocaleDateString('zh-TW'))+'</div></div>' +
+      (deliveryDate ? '<div><span style="color:#9CA3AF;font-size:.75rem;">預計交貨日</span><div style="font-weight:600;">'+deliveryDate+'</div></div>' : '') +
       '</div>' +
+      '<div style="margin-bottom:12px;"><span style="color:#9CA3AF;font-size:.75rem;">說明</span><div>'+description+'</div></div>' +
       (note ? '<div style="margin-bottom:12px;"><span style="color:#9CA3AF;font-size:.75rem;">備註</span><div>'+note+'</div></div>' : '') +
       '<table style="width:100%;border-collapse:collapse;font-size:.85rem;">' +
       '<tr style="background:var(--mint-light);"><th style="padding:8px 12px;text-align:left;">品名</th><th style="padding:8px 12px;text-align:left;">SKU</th><th style="padding:8px 12px;text-align:center;">數量</th></tr>' +
@@ -2140,7 +2163,9 @@ function reqResetForm(){
   formTab.innerHTML = '<div class="req-form-card">' +
     '<h3 style="margin-bottom:16px;color:var(--green-deep);">📝 新增申請</h3>' +
     '<div class="req-field"><label>申請人</label><input type="text" id="reqApplicant" placeholder="請輸入姓名" /></div>' +
-    '<div class="req-field"><label>用途說明</label><select id="reqPurpose"><option value="">請選擇</option><option value="公關品">公關品</option><option value="其他">其他</option></select></div>' +
+    '<div style="display:flex;gap:12px;"><div class="req-field" style="flex:1;"><label>申請日期</label><input type="date" id="reqDate" value="'+new Date().toISOString().slice(0,10)+'" /></div><div class="req-field" style="flex:1;"><label>預計交貨日</label><input type="date" id="reqDeliveryDate" /></div></div>' +
+    '<div class="req-field"><label>用途</label><select id="reqPurpose"><option value="">請選擇</option><option value="公關品">公關品</option><option value="其他">其他</option></select></div>' +
+    '<div class="req-field"><label>說明</label><textarea id="reqDescription" rows="2" placeholder="請填寫用途說明"></textarea></div>' +
     '<div class="req-field"><label>備註 <span style="font-weight:400;color:#9CA3AF;">(選填)</span></label><textarea id="reqNote" rows="2" placeholder="補充說明"></textarea></div>' +
     '<h4 style="margin:20px 0 10px;color:var(--text);font-size:.9rem;">商品明細</h4>' +
     '<div id="reqItems"><div class="req-item-row" data-idx="0">' +
@@ -2166,6 +2191,7 @@ async function reqLoadList(){
     const resp = await fetch(APPS_SCRIPT_URL+'?action=getAll');
     const json = await resp.json();
     const filter = document.getElementById('reqFilterStatus').value;
+    const filterApplicant = (document.getElementById('reqFilterApplicant')?.value||'').trim().toLowerCase();
 
     // 按申請編號分組
     const groups = {};
@@ -2173,7 +2199,8 @@ async function reqLoadList(){
       const id = row['申請編號'];
       if(!id) return;
       if(filter && row['狀態'] !== filter) return;
-      if(!groups[id]) groups[id] = { id, rows:[], date:row['申請日期'], applicant:row['申請人'], purpose:row['用途說明'], status:row['狀態'], warehouse:row['倉管確認人'], warehouseDate:row['倉管確認日期'], manager:row['主管核准人'], managerDate:row['主管核准日期'], rejectReason:row['退回原因'], note:row['備註'] };
+      if(filterApplicant && !(row['申請人']||'').toLowerCase().includes(filterApplicant)) return;
+      if(!groups[id]) groups[id] = { id, rows:[], date:row['申請日期'], applicant:row['申請人'], purpose:row['用途'], description:row['說明'], deliveryDate:row['預計交貨日'], status:row['狀態'], warehouse:row['倉管確認人'], warehouseDate:row['倉管確認日期'], manager:row['主管核准人'], managerDate:row['主管核准日期'], rejectReason:row['退回原因'], note:row['備註'] };
       groups[id].rows.push({ barcode:row['商品編號'], name:row['品名'], qty:row['數量'] });
     });
 
@@ -2203,7 +2230,7 @@ async function reqLoadList(){
 
       return '<div class="req-card">' +
         '<div class="req-card-header"><div><span class="req-card-id">'+g.id+'</span> <span class="req-card-date">'+g.date+'</span></div><span class="req-badge '+badgeClass+'">'+g.status+'</span></div>' +
-        '<div class="req-card-info">申請人：'+g.applicant+' ｜ 用途：'+g.purpose+(g.note?' ｜ 備註：'+g.note:'')+'</div>' +
+        '<div class="req-card-info">申請人：'+g.applicant+' ｜ 用途：'+g.purpose+(g.description?' ｜ 說明：'+g.description:'')+(g.deliveryDate?' ｜ 預計交貨：'+g.deliveryDate:'')+(g.note?' ｜ 備註：'+g.note:'')+'</div>' +
         '<div class="req-card-items"><table><tr><th>品名</th><th>條碼</th><th>數量</th></tr>' +
         g.rows.map(r=>'<tr><td>'+r.name+'</td><td style="color:#9CA3AF;">'+r.barcode+'</td><td style="font-weight:700;">'+r.qty+'</td></tr>').join('') +
         '</table></div>' +

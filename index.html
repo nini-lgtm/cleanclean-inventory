@@ -517,7 +517,7 @@ tbody tr.row-warn{background:#fffdf0;}
   <!-- 申請紀錄列表（常駐顯示） -->
   <div style="padding:0 24px;"><hr style="border:none;border-top:1.5px dashed var(--border);margin:8px 0;"></div>
   <div id="reqListTab" class="req-tab active" style="padding:16px 24px;">
-    <div style="margin-bottom:8px;"><button class="dl-btn" onclick="reqShowTab('form')" style="background:var(--green-deep);color:white;">＋ 新增申請</button></div>
+    <div style="margin-bottom:8px;"><button class="dl-btn" onclick="reqShowTab('form')" style="background:var(--green-deep);color:white;font-size:.95rem;padding:8px 18px;">＋ 新增申請</button></div>
     <div class="req-list-header">
       <h3 style="color:var(--green-deep);">📑 申請紀錄</h3>
       <div class="req-filter-row">
@@ -2160,9 +2160,9 @@ async function reqSubmit(){
   }
 
   try{
-    const resp = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'text/plain'},
       body: JSON.stringify({ action:'submit', applicant, purpose, description, deliveryDate, note, items })
     });
     reqSaveApplicant(applicant);
@@ -2365,7 +2365,7 @@ async function reqDoAction(){
   try{
     await fetch(APPS_SCRIPT_URL, {
       method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'text/plain'},
       body: JSON.stringify({ action:'updateStatus', reqId, step, confirmer, reason })
     });
     reqCloseAction();

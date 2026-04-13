@@ -528,7 +528,7 @@ tbody tr.row-warn{background:#fffdf0;}
           <option value="已完成">已完成</option>
           <option value="已退回">已退回</option>
         </select>
-        <button class="dl-btn" onclick="reqLoadList()">🔄 重新整理</button>
+        <button class="dl-btn" onclick="reqLoadList(true)">🔄 重新整理</button>
       </div>
     </div>
     <div id="reqListBody" class="req-list-body">
@@ -2189,16 +2189,34 @@ function reqResetForm(){
   reqItemIdx = 1;
 }
 
-async function reqLoadList(){
+let _reqCache = null;
+let _reqCacheTime = 0;
+const REQ_CACHE_MS = 30000; // 30 秒快取
+
+async function reqLoadList(forceRefresh){
   const body = document.getElementById('reqListBody');
   if(!APPS_SCRIPT_URL){
     body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">尚未設定 Google Apps Script 網址</div>';
     return;
   }
-  body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">載入中...</div>';
+
+  let json;
+  const now = Date.now();
+  if(!forceRefresh && _reqCache && (now - _reqCacheTime < REQ_CACHE_MS)){
+    json = _reqCache;
+  } else {
+    body.innerHTML='<div style="text-align:center;padding:40px;color:#9CA3AF;">載入中...</div>';
+    try{
+      const resp = await fetch(APPS_SCRIPT_URL+'?action=getAll');
+      json = await resp.json();
+      _reqCache = json;
+      _reqCacheTime = now;
+    }catch(e){
+      body.innerHTML='<div style="text-align:center;padding:40px;color:#EF4444;">載入失敗：'+e.message+'</div>';
+      return;
+    }
+  }
   try{
-    const resp = await fetch(APPS_SCRIPT_URL+'?action=getAll');
-    const json = await resp.json();
     const filter = document.getElementById('reqFilterStatus').value;
     const filterApplicant = (document.getElementById('reqFilterApplicant')?.value||'').trim().toLowerCase();
 
@@ -2302,7 +2320,7 @@ async function reqDoAction(){
     });
     reqCloseAction();
     // no-cors 無法讀回應，等一下再重新載入
-    setTimeout(()=>reqLoadList(), 1500);
+    setTimeout(()=>reqLoadList(true), 1500);
   }catch(e){
     alert('操作失敗：'+e.message);
   }

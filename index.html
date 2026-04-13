@@ -49,11 +49,11 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .req-list-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
 .req-filter-row{display:flex;gap:10px;align-items:center;}
 .req-filter-row select{padding:8px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.82rem;font-family:inherit;outline:none;}
-.req-list-body{display:flex;flex-direction:column;gap:6px;}
-.req-card{background:white;border-radius:12px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,.05);border:1px solid var(--border);}
-.req-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px;}
-.req-card-id{font-weight:700;color:var(--green-deep);font-size:.9rem;}
-.req-card-date{font-size:.75rem;color:var(--text-light);}
+.req-list-body{display:flex;flex-direction:column;gap:4px;}
+.req-card{background:white;border-radius:10px;padding:8px 12px;box-shadow:0 1px 4px rgba(0,0,0,.04);border:1px solid var(--border);}
+.req-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px;}
+.req-card-id{font-weight:700;color:var(--green-deep);font-size:.82rem;}
+.req-card-date{font-size:.7rem;color:var(--text-light);}
 .req-badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:600;}
 .req-badge.st-pending{background:#FEF3C7;color:#92400E;}
 .req-badge.st-warehouse{background:#DBEAFE;color:#1E40AF;}
@@ -62,9 +62,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .req-badge.st-shipped{background:#C4B5FD;color:#5B21B6;}
 .req-badge.st-complete{background:#E5E7EB;color:#374151;}
 .req-badge.st-rejected{background:#FEE2E2;color:#991B1B;}
-.req-card-info{font-size:.82rem;color:var(--text-mid);margin-bottom:6px;}
-.req-card-items{margin:6px 0;border-top:1px solid #f0f4f5;padding-top:6px;}
-.req-card-items table{width:auto;font-size:.8rem;border-collapse:collapse;}
+.req-card-info{font-size:.78rem;color:var(--text-mid);margin-bottom:4px;}
+.req-card-items{margin:4px 0;border-top:1px solid #f0f4f5;padding-top:4px;}
+.req-card-items table{width:auto;font-size:.76rem;border-collapse:collapse;}
 .req-card-items th:nth-child(3),.req-card-items td:nth-child(3){text-align:right;padding-left:24px;}
 .req-card-items th:nth-child(2),.req-card-items td:nth-child(2){padding-left:24px;}
 .req-card-items th{text-align:left;color:var(--text-light);font-weight:500;padding:4px 8px;}
@@ -2290,8 +2290,8 @@ async function reqLoadList(forceRefresh){
       return '<div class="req-card">' +
         '<div class="req-card-header"><div><span class="req-card-id">'+g.id+'</span> <span class="req-card-date">'+g.date+'</span></div><span class="req-badge '+badgeClass+'">'+g.status+'</span></div>' +
         '<div class="req-card-info">申請人：'+g.applicant+' ｜ 用途：'+g.purpose+(g.description?' ｜ 說明：'+g.description:'')+(g.deliveryDate?' ｜ 預計交貨：'+g.deliveryDate:'')+(g.note?' ｜ 備註：'+g.note:'')+'</div>' +
-        '<div class="req-card-items"><table><tr><th>品名</th><th>條碼</th><th style="text-align:right;">數量</th></tr>' +
-        g.rows.map(r=>'<tr><td>'+r.name+'</td><td style="color:#9CA3AF;">'+r.barcode+'</td><td style="font-weight:700;text-align:right;">'+r.qty+'</td></tr>').join('') +
+        '<div class="req-card-items"><table><tr><th>條碼</th><th>品名</th><th style="text-align:right;">數量</th></tr>' +
+        g.rows.map(r=>'<tr><td style="color:#9CA3AF;">'+r.barcode+'</td><td>'+r.name+'</td><td style="font-weight:700;text-align:right;">'+r.qty+'</td></tr>').join('') +
         '</table></div>' +
         timeline +
         (actions ? '<div class="req-card-actions">'+actions+'</div>' : '') +

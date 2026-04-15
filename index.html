@@ -2344,173 +2344,145 @@ async function reqDoAction(){
 }
 
 /* =========================================================
-   ⬇⬇⬇  階層篩選 大類 → 中類 → 小類 (統一掛在全頁籤) ⬇⬇⬇
+   階層篩選 大類 → 中類 → 小類 (post-hoc DOM hiding; 安全模式)
    ========================================================= */
-(function initHierarchy(){
-  const BIG_ORDER=['淨淨','阿清','天泉','淨淨物料'];
-  const sortBigs=a=>a.slice().sort((x,y)=>{
-    const xi=BIG_ORDER.indexOf(x), yi=BIG_ORDER.indexOf(y);
-    const xv=xi<0?99:xi, yv=yi<0?99:yi;
-    return xv!==yv?xv-yv:String(x).localeCompare(String(y));
-  });
-  const bigOf = d => d.big || (d.category==='贈品'?'淨淨':(d.category||''));
-  const midOf = d => d.mid || d.category || '';
-  const smallOf = d => d.small || '';
-
-  // 全域階層狀態
-  window.hierState = { m:{big:'',mid:'',small:''}, s:{big:'',mid:'',small:''}, st:{big:'',mid:'',small:''}, v:{big:'',mid:'',small:''}, spec:{big:'',mid:'',small:''} };
-
-  const SRC = {
-    m:  ()=>typeof mgrData!=='undefined'?mgrData:DATA,
-    s:  ()=>typeof staffData!=='undefined'?staffData:DATA,
-    st: ()=>typeof STORES_DATA!=='undefined'?STORES_DATA:[],
-    v:  ()=>typeof VENDOR_LIST!=='undefined'?VENDOR_LIST:[],
-    spec: ()=>Object.values(typeof SPEC_DATA!=='undefined'?SPEC_DATA:{}),
-  };
-
-  function renderPx(px){
-    if(px==='m'||px==='s'){ render(px); }
-    else if(px==='st'){ renderStore(); }
-    else if(px==='v'){ renderVendor(); }
-    else if(px==='spec'){ renderSpec(); }
+(function initHierarchy(){ try {
+  var BIG_ORDER=['淨淨','阿清','天泉','淨淨物料'];
+  function sortBigs(a){
+    return a.slice().sort(function(x,y){
+      var xi=BIG_ORDER.indexOf(x), yi=BIG_ORDER.indexOf(y);
+      var xv=xi<0?99:xi, yv=yi<0?99:yi;
+      if(xv!==yv) return xv-yv;
+      return String(x).localeCompare(String(y));
+    });
+  }
+  function bigOf(d){ return (d&&d.big) || ((d&&d.category)==='贈品'?'淨淨':((d&&d.category)||'')); }
+  function smallOf(d){ return (d&&d.small) || ''; }
+  function srcOf(px){
+    if(px==='m') return (typeof mgrData!=='undefined')?mgrData:[];
+    if(px==='s') return (typeof staffData!=='undefined')?staffData:[];
+    if(px==='st')return (typeof STORES_DATA!=='undefined')?STORES_DATA:[];
+    if(px==='v') return (typeof VENDOR_LIST!=='undefined')?VENDOR_LIST:[];
+    if(px==='spec')return (typeof SPEC_DATA!=='undefined')?Object.values(SPEC_DATA):[];
+    return [];
   }
 
-  function btn(label, onclick, data){
-    const b=document.createElement('button');
-    b.className='cat-btn'; b.textContent=label;
-    if(data) Object.entries(data).forEach(([k,v])=>b.dataset[k]=v);
-    b.onclick=onclick;
+  window.hierState = window.hierState || {m:{big:'',small:''},s:{big:'',small:''},st:{big:'',small:''},v:{big:'',small:''},spec:{big:'',small:''}};
+
+  function mkBtn(text, onclick){
+    var b=document.createElement('button');
+    b.className='cat-btn'; b.textContent=text; b.onclick=onclick;
     return b;
   }
 
+  function applyHide(px){
+    var st=hierState[px]; if(!st) return;
+    var src=srcOf(px);
+    if(!src.length) return;
+    var idx={}; src.forEach(function(d){ idx[d.barcode]=d; });
+    var tbodyId = (px==='m')?'m-tbody':(px==='s')?'s-tbody':(px==='st')?'st-tbody':(px==='v')?'v-tbody':'spec-tbody';
+    var tb=document.getElementById(tbodyId); if(!tb) return;
+    var rows=tb.querySelectorAll('tr');
+    for(var i=0;i<rows.length;i++){
+      var tr=rows[i];
+      // 嘗試找 barcode：checkbox dataset.key 或 dataset.barcode
+      var key='';
+      var cb=tr.querySelector('input[data-key]');
+      if(cb) key=(cb.dataset.key||'').split('|')[0];
+      if(!key){ var tdMono=tr.querySelector('td'); } // fallback nothing
+      var d=key?idx[key]:null;
+      if(!d){ tr.style.display=''; continue; }
+      var show=true;
+      if(st.big && bigOf(d)!==st.big) show=false;
+      if(st.small && smallOf(d)!==st.small) show=false;
+      tr.style.display = show?'':'none';
+    }
+  }
+
+  function selectBigH(px,bg){
+    var st=hierState[px]; st.big=bg; st.small='';
+    document.querySelectorAll('#'+px+'-bigrow2 .cat-btn').forEach(function(b){ b.classList.toggle('active',(b.dataset.big||'')===bg); });
+    document.querySelectorAll('#'+px+'-smallrow .cat-btn').forEach(function(b){
+      var isAll=(b.dataset.small||'')==='';
+      b.style.display=(bg===''||isAll||b.dataset.big===bg)?'':'none';
+      b.classList.toggle('active',isAll);
+    });
+    // 中類按鈕 (原有 catrow) 依 big 顯示
+    document.querySelectorAll('#'+px+'-catrow .cat-btn').forEach(function(b){
+      var isAll=(b.dataset.cat||'')==='';
+      b.style.display=(bg===''||isAll||b.dataset.big===bg)?'':'none';
+    });
+    applyHide(px);
+  }
+  function selectSmallH(px,sm){
+    hierState[px].small=sm;
+    document.querySelectorAll('#'+px+'-smallrow .cat-btn').forEach(function(b){ b.classList.toggle('active',(b.dataset.small||'')===sm); });
+    applyHide(px);
+  }
+  window.selectBigH=selectBigH;
+  window.selectSmallH=selectSmallH;
+
   function injectRows(px){
-    const cat=document.getElementById(px+'-catrow');
+    var cat=document.getElementById(px+'-catrow');
     if(!cat || document.getElementById(px+'-bigrow2')) return;
-
-    // 改中類 label
-    const lbl=cat.querySelector('.filter-label');
+    // label rename
+    var lbl=cat.querySelector('.filter-label');
     if(lbl) lbl.textContent='中類：';
-
-    // 大類 row (插在 cat row 前)
-    const bigRow=document.createElement('div');
+    // 大類 row
+    var bigRow=document.createElement('div');
     bigRow.className='filter-row'; bigRow.id=px+'-bigrow2';
-    bigRow.innerHTML='<span class="filter-label">大類：</span>';
-    bigRow.appendChild(btn('全部', ()=>selectBig(px,''), {big:''}));
-    bigRow.firstElementChild.nextElementSibling.classList.add('active');
+    var lblB=document.createElement('span'); lblB.className='filter-label'; lblB.textContent='大類：'; bigRow.appendChild(lblB);
+    var allB=mkBtn('全部', function(){ selectBigH(px,''); }); allB.classList.add('active'); allB.dataset.big=''; bigRow.appendChild(allB);
     cat.parentNode.insertBefore(bigRow, cat);
-
-    // 小類 row (插在 cat row 後)
-    const smallRow=document.createElement('div');
-    smallRow.className='filter-row'; smallRow.id=px+'-smallrow';
-    smallRow.innerHTML='<span class="filter-label">小類：</span>';
-    smallRow.appendChild(btn('全部', ()=>selectSmall(px,''), {small:''}));
-    smallRow.firstElementChild.nextElementSibling.classList.add('active');
-    cat.parentNode.insertBefore(smallRow, cat.nextSibling);
+    // 小類 row
+    var smRow=document.createElement('div');
+    smRow.className='filter-row'; smRow.id=px+'-smallrow';
+    var lblS=document.createElement('span'); lblS.className='filter-label'; lblS.textContent='小類：'; smRow.appendChild(lblS);
+    var allS=mkBtn('全部', function(){ selectSmallH(px,''); }); allS.classList.add('active'); allS.dataset.small=''; smRow.appendChild(allS);
+    cat.parentNode.insertBefore(smRow, cat.nextSibling);
   }
 
   function buildOptions(px){
-    const items=SRC[px]();
-    const bigRow=document.getElementById(px+'-bigrow2');
-    const smallRow=document.getElementById(px+'-smallrow');
-    if(!bigRow) return;
-
-    // 大類按鈕
-    const bigs=sortBigs([...new Set(items.map(bigOf).filter(Boolean))]);
-    bigs.forEach(b=>bigRow.appendChild(btn(b, ()=>selectBig(px,b), {big:b})));
-
-    // 小類按鈕（全部產生，點大/中時用 CSS 隱藏）
-    const seen=new Set();
-    items.forEach(d=>{
-      const s=smallOf(d); if(!s||seen.has(s)) return; seen.add(s);
-      smallRow.appendChild(btn(s, ()=>selectSmall(px,s), {small:s, big:bigOf(d), mid:midOf(d)}));
+    var src=srcOf(px);
+    var bigRow=document.getElementById(px+'-bigrow2');
+    var smRow=document.getElementById(px+'-smallrow');
+    if(!bigRow||!smRow) return;
+    var bigs={}; src.forEach(function(d){ var b=bigOf(d); if(b) bigs[b]=1; });
+    sortBigs(Object.keys(bigs)).forEach(function(b){
+      var btn=mkBtn(b, function(){ selectBigH(px,b); }); btn.dataset.big=b; bigRow.appendChild(btn);
     });
-
-    // 補 tag 到既有中類按鈕 (dataset.big/dataset.cat 保持)
-    document.querySelectorAll('#'+px+'-catrow .cat-btn').forEach(bEl=>{
-      const c=bEl.dataset.cat||'';
-      const sample=items.find(d=>midOf(d)===c);
+    var seen={};
+    src.forEach(function(d){
+      var sm=smallOf(d); if(!sm||seen[sm]) return; seen[sm]=1;
+      var btn=mkBtn(sm, function(){ selectSmallH(px,sm); });
+      btn.dataset.small=sm; btn.dataset.big=bigOf(d);
+      smRow.appendChild(btn);
+    });
+    // 為既有中類按鈕補 data-big
+    document.querySelectorAll('#'+px+'-catrow .cat-btn').forEach(function(bEl){
+      var c=bEl.dataset.cat||''; if(!c) return;
+      var sample=src.find(function(d){ return (d.category||d.mid)===c; });
       if(sample){ bEl.dataset.big=bigOf(sample); }
     });
   }
 
-  window.selectBig = function(px,bg){
-    const st=hierState[px]; st.big=bg; st.mid=''; st.small='';
-    document.querySelectorAll('#'+px+'-bigrow2 .cat-btn').forEach(b=>b.classList.toggle('active',(b.dataset.big||'')===bg));
-    // 中類：展示/隱藏 & reset active
-    document.querySelectorAll('#'+px+'-catrow .cat-btn').forEach(b=>{
-      const isAll=(b.dataset.cat||'')==='';
-      b.style.display=(bg===''||isAll||b.dataset.big===bg)?'':'none';
-      b.classList.toggle('active',isAll);
-    });
-    // 小類：依 big 過濾
-    document.querySelectorAll('#'+px+'-smallrow .cat-btn').forEach(b=>{
-      const isAll=(b.dataset.small||'')==='';
-      b.style.display=(bg===''||isAll||b.dataset.big===bg)?'':'none';
-      b.classList.toggle('active',isAll);
-    });
-    // 同步舊 state 以避免衝突
-    if(state&&state[px]){ state[px].big=bg; state[px].cats=[]; }
-    if(px==='st'&&typeof storeState!=='undefined') storeState.cat='';
-    if(px==='v'&&typeof vendorState!=='undefined') vendorState.cat='';
-    if(px==='spec'){ specCat=''; if(typeof specBig!=='undefined') specBig=bg; }
-    renderPx(px);
-  };
-
-  window.selectSmall = function(px,sm){
-    hierState[px].small=sm;
-    document.querySelectorAll('#'+px+'-smallrow .cat-btn').forEach(b=>b.classList.toggle('active',(b.dataset.small||'')===sm));
-    renderPx(px);
-  };
-
-  // 用 wrapper 把階層過濾套進 getFiltered/renderStore/renderVendor/renderSpec
-  if(typeof getFiltered==='function'){
-    const orig=getFiltered;
-    window.getFiltered=function(px){
-      let arr=orig(px);
-      const h=hierState[px]||{};
-      if(h.big) arr=arr.filter(d=>bigOf(d)===h.big);
-      if(h.small) arr=arr.filter(d=>smallOf(d)===h.small);
-      return arr;
-    };
+  // 監聽每個 tbody 變化 → 套用 hide (不 wrap render 函式)
+  function watchTbody(px){
+    var tbodyId=(px==='m')?'m-tbody':(px==='s')?'s-tbody':(px==='st')?'st-tbody':(px==='v')?'v-tbody':'spec-tbody';
+    var tb=document.getElementById(tbodyId); if(!tb) return;
+    var mo=new MutationObserver(function(){ applyHide(px); });
+    mo.observe(tb, {childList:true});
   }
-  ['renderStore','renderVendor','renderSpec'].forEach(fn=>{
-    if(typeof window[fn]!=='function') return;
-    const orig=window[fn];
-    window[fn]=function(){
-      const ret=orig.apply(this,arguments);
-      // 後處理：移除不符 hier 的列
-      const map={renderStore:{px:'st',tbody:'st-tbody',data:'barcode'},
-                 renderVendor:{px:'v',tbody:'v-tbody',data:'barcode'},
-                 renderSpec:{px:'spec',tbody:'spec-tbody',data:'barcode'}};
-      const cfg=map[fn]; if(!cfg) return ret;
-      const h=hierState[cfg.px]||{}; if(!h.big&&!h.small) return ret;
-      const items=SRC[cfg.px]();
-      const idx={}; items.forEach(d=>idx[d.barcode]=d);
-      document.querySelectorAll('#'+cfg.tbody+' tr').forEach(tr=>{
-        const cb=tr.querySelector('input[data-key]'); if(!cb) return;
-        const key=(cb.dataset.key||'').split('|')[0]; // vendorKey may include extra
-        const d=idx[key]; if(!d){ return; }
-        let show=true;
-        if(h.big && bigOf(d)!==h.big) show=false;
-        if(h.small && smallOf(d)!==h.small) show=false;
-        tr.style.display = show?'':'none';
-      });
-      return ret;
-    };
-  });
 
-  // DOM 就緒：插入按鈕並首次渲染
   function boot(){
-    ['m','s','st','v','spec'].forEach(px=>{ injectRows(px); buildOptions(px); });
-    // 重新渲染所有頁籤以套入 hier wrapper
-    try{ if(typeof render==='function'){ render('m'); render('s'); } }catch(e){}
-    try{ if(typeof renderStore==='function') renderStore(); }catch(e){}
-    try{ if(typeof renderVendor==='function') renderVendor(); }catch(e){}
-    try{ if(typeof renderSpec==='function') renderSpec(); }catch(e){}
+    ['m','s','st','v','spec'].forEach(function(px){
+      try{ injectRows(px); buildOptions(px); watchTbody(px); }
+      catch(e){ console.warn('hier init failed for', px, e); }
+    });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
   else setTimeout(boot,0);
-})();
+} catch(e) { console.error('[initHierarchy] skipped:', e); } })();
 
 </script>
 

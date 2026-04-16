@@ -1139,6 +1139,43 @@ function nearestExpiry(batches, excludeLoc){
   return valid.length ? valid[0] : null;
 }
 
+function groupedRowsHtml(items, colspan, makeRow, opts){
+  if(!items || !items.length) return '';
+  opts = opts || {};
+  // 以 大→中→小 排序以利分組（若外部已排序則保持）
+  var sorted = items.slice().sort(function(a,b){
+    var A = (a.big||'')+'\u0001'+(a.mid||a.category||'')+'\u0001'+(a.small||'');
+    var B = (b.big||'')+'\u0001'+(b.mid||b.category||'')+'\u0001'+(b.small||'');
+    return A.localeCompare(B,'zh-TW');
+  });
+  var html = '';
+  var lastKey = null;
+  sorted.forEach(function(d){
+    var big   = d.big || '';
+    var mid   = d.mid || d.category || '';
+    var small = d.small || '';
+    var key   = big+'|'+mid+'|'+small;
+    if(key !== lastKey){
+      var label = small || mid || '其他';
+      var crumb = [big, mid].filter(Boolean).join(' › ');
+      var seriesItems = sorted.filter(function(x){
+        return ((x.big||'')+'|'+(x.mid||x.category||'')+'|'+(x.small||''))===key;
+      });
+      var cnt = seriesItems.length;
+      html += '<tr class="series-header" data-series-key="'+key.replace(/"/g,'&quot;')+'">'
+            + '<td colspan="'+colspan+'" style="background:linear-gradient(90deg,#EFF6FF,#F0F9FF);'
+            + 'border-left:4px solid #3B82F6;padding:8px 14px;">'
+            + '<span style="font-weight:700;color:#1E40AF;font-size:.95rem;">'+label+'</span>'
+            + (cnt>1?'<span style="margin-left:8px;font-size:.72rem;color:#64748B;">('+cnt+' 款)</span>':'')
+            + (crumb?'<span style="color:#64748B;font-size:.72rem;margin-left:12px;">'+crumb+'</span>':'')
+            + '</td></tr>';
+      lastKey = key;
+    }
+    html += makeRow(d);
+  });
+  return html;
+}
+
 function render(px){
   let items = getFiltered(px);
   const s   = state[px];
@@ -1160,7 +1197,7 @@ function render(px){
 
     document.getElementById('m-tbody').innerHTML = items.length===0
       ? '<tr><td colspan="6" class="no-results">找不到符合條件的商品</td></tr>'
-      : items.map(d=>{
+      : groupedRowsHtml(items, 6, function(d){
           const goodBatches = (d.batches||[]).filter(b=>{
             if(s.loc==='__defect__') return isDefectLoc(b.loc);
             if(isDefectLoc(b.loc)) return false;
@@ -1174,13 +1211,13 @@ function render(px){
           const pickStyle = picked ? 'background:#EFF6FF;' : '';
           return `<tr class="${rowCls}" style="${pickStyle}">
             <td style="text-align:center;"><input type="checkbox" ${picked?'checked':''} onclick="togglePick('m','${d.barcode}')"></td>
-            <td><span class="cat-badge">${d.category}</span></td>
+            <td><span class="cat-badge">${d.mid||d.category}</span></td>
             <td class="barcode-cell">${d.barcode}</td>
-            <td class="name-cell">${d.name}</td>
+            <td class="name-cell" style="padding-left:20px;">${d.name}</td>
             <td class="stock-cell"><span class="stock-num ${sc}">${goodStock.toLocaleString()}</span></td>
             <td>${renderBatches(goodBatches, s.expFilter)}</td>
           </tr>`;
-        }).join('');
+        });
     const mPickAll = document.getElementById('m-pickall');
     if(mPickAll){ mPickAll.checked = items.length>0 && items.every(d=>state.m.picks.has(d.barcode)); }
     updatePickUI('m');
@@ -1225,7 +1262,7 @@ function render(px){
 
     document.getElementById('s-tbody').innerHTML = items.length===0
       ? '<tr><td colspan="6" class="no-results">找不到符合條件的商品</td></tr>'
-      : items.map(d=>{
+      : groupedRowsHtml(items, 6, function(d){
           const isAqing  = d.category==='阿清';
           const omsStock = isAqing
             ? (d.batches||[]).filter(b=>b.loc==='公司庫').reduce((a,b)=>a+b.qty,0)
@@ -1244,13 +1281,13 @@ function render(px){
           const pickStyle = picked ? 'background:#EFF6FF;' : '';
           return `<tr class="${rowCls}" style="${pickStyle}">
             <td style="text-align:center;"><input type="checkbox" ${picked?'checked':''} onclick="togglePick('s','${d.barcode}')"></td>
-            <td><span class="cat-badge">${d.category}</span></td>
+            <td><span class="cat-badge">${d.mid||d.category}</span></td>
             <td class="barcode-cell">${d.barcode}</td>
-            <td class="name-cell">${d.name}</td>
+            <td class="name-cell" style="padding-left:20px;">${d.name}</td>
             <td class="stock-cell"><span class="stock-num ${sc}">${omsStock.toLocaleString()}</span></td>
             <td>${expLabel}</td>
           </tr>`;
-        }).join('');
+        });
     const sPickAll = document.getElementById('s-pickall');
     if(sPickAll){ sPickAll.checked = items.length>0 && items.every(d=>state.s.picks.has(d.barcode)); }
     updatePickUI('s');
@@ -1377,7 +1414,7 @@ function renderStore(){
 
   document.getElementById('st-tbody').innerHTML = items.length===0
     ? '<tr><td colspan="4" class="no-results">找不到符合條件的商品</td></tr>'
-    : items.map(d=>{
+    : groupedRowsHtml(items, 4, function(d){
         const shownStores = storeState.store
           ? d.stores.filter(s=>s.loc===storeState.store)
           : d.stores;
@@ -1386,12 +1423,12 @@ function renderStore(){
           `<div class="batch-row"><span class="batch-loc" style="min-width:150px">${s.loc}</span><span class="batch-qty">× ${s.qty.toLocaleString()} 件</span></div>`
         ).join('');
         return `<tr>
-          <td><span class="cat-badge">${d.category}</span></td>
-          <td class="name-cell">${d.name}</td>
+          <td><span class="cat-badge">${d.mid||d.category}</span></td>
+          <td class="name-cell" style="padding-left:20px;">${d.name}</td>
           <td class="stock-cell"><span class="stock-num stock-ok">${shownTotal.toLocaleString()}</span></td>
           <td><div class="batch-list">${storeRows}</div></td>
         </tr>`;
-      }).join('');
+      });
 }
 
 /* ===== VENDOR (業務給廠商) ===== */

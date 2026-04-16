@@ -103,7 +103,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 .home-stat .hs-label{font-size:.72rem;color:var(--text-mid);margin-top:4px;display:block;}
 .home-stat.hs-urgent{border-color:#fecaca;background:#FFF5F5;}
 .home-stat.hs-urgent .hs-num{color:#DC2626;}
-.home-stat.hs-warn{border-color:#fde68a;background:#FFFBEB;}
+.home-stat.hs-warn{border-color:#fde68a;background:#FEF3C7;}
 .home-stat.hs-warn .hs-num{color:#D97706;}
 
 /* HOME SEARCH */
@@ -124,7 +124,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text
 /* HOME BULLETIN */
 .bulletin-wrap{width:100%;max-width:680px;display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
 .home-bulletin{width:100%;background:white;border:1.5px solid var(--border);border-radius:18px;padding:16px 20px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
-#homeBulletinImportant{border-color:#fde68a;background:#FFFBEB;}
+#homeBulletinImportant{border-color:#fde68a;background:#FEF3C7;}
 .bulletin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .bulletin-header .bh-title{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;color:var(--green-deep);letter-spacing:.04em;}
 .bulletin-toggle{background:none;border:none;color:var(--mint);font-size:.75rem;cursor:pointer;font-family:inherit;font-weight:500;padding:2px 8px;border-radius:8px;transition:background .15s;}
@@ -823,14 +823,14 @@ tbody tr.row-warn{background:#fffdf0;}
           <th>商品名稱</th>
           <th>最近效期</th>
           <th class="v-spec-col" style="display:none;">箱入數</th>
-          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品寬</th>
-          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品高</th>
-          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品深</th>
-          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品重</th>
-          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱寬</th>
-          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱高</th>
-          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱深</th>
-          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱重</th>
+          <th class="v-spec-col" style="display:none;background:#0369A1;color:#fff;font-weight:700;">單品寬</th>
+          <th class="v-spec-col" style="display:none;background:#0369A1;color:#fff;font-weight:700;">單品高</th>
+          <th class="v-spec-col" style="display:none;background:#0369A1;color:#fff;font-weight:700;">單品深</th>
+          <th class="v-spec-col" style="display:none;background:#0369A1;color:#fff;font-weight:700;">單品重</th>
+          <th class="v-spec-col" style="display:none;background:#B45309;color:#fff;font-weight:700;">成箱寬</th>
+          <th class="v-spec-col" style="display:none;background:#B45309;color:#fff;font-weight:700;">成箱高</th>
+          <th class="v-spec-col" style="display:none;background:#B45309;color:#fff;font-weight:700;">成箱深</th>
+          <th class="v-spec-col" style="display:none;background:#B45309;color:#fff;font-weight:700;">成箱重</th>
         </tr></thead>
         <tbody id="v-tbody"></tbody>
       </table>
@@ -870,18 +870,18 @@ tbody tr.row-warn{background:#fffdf0;}
             <th rowspan="2" style="min-width:200px;">品名</th>
             <th rowspan="2" style="width:70px;">容量</th>
             <th rowspan="2" style="width:70px;">箱入數</th>
-            <th colspan="4" style="background:#E0F2FE;color:#0369A1;border-left:2px solid #7DD3FC;">🧴 單品 (cm / g)</th>
-            <th colspan="4" style="background:#FEF3C7;color:#92400E;border-left:2px solid #FCD34D;">📦 成箱 (cm / g)</th>
+            <th colspan="4" style="background:#0369A1;color:#fff;border-left:2px solid #075985;font-weight:700;letter-spacing:.5px;">🧴 單品 (cm / g)</th>
+            <th colspan="4" style="background:#B45309;color:#fff;border-left:2px solid #92400E;font-weight:700;letter-spacing:.5px;">📦 成箱 (cm / g)</th>
           </tr>
           <tr>
-            <th style="width:50px;background:#E0F2FE;border-left:2px solid #7DD3FC;">寬</th>
-            <th style="width:50px;background:#E0F2FE;">高</th>
-            <th style="width:50px;background:#E0F2FE;">深</th>
-            <th style="width:60px;background:#E0F2FE;">重</th>
-            <th style="width:50px;background:#FEF3C7;border-left:2px solid #FCD34D;">寬</th>
-            <th style="width:50px;background:#FEF3C7;">高</th>
-            <th style="width:50px;background:#FEF3C7;">深</th>
-            <th style="width:60px;background:#FEF3C7;">重</th>
+            <th style="width:50px;background:#7DD3FC;color:#0C4A6E;border-left:2px solid #075985;font-weight:700;">寬</th>
+            <th style="width:50px;background:#7DD3FC;color:#0C4A6E;font-weight:700;">高</th>
+            <th style="width:50px;background:#7DD3FC;color:#0C4A6E;font-weight:700;">深</th>
+            <th style="width:60px;background:#7DD3FC;color:#0C4A6E;font-weight:700;">重</th>
+            <th style="width:50px;background:#FCD34D;color:#78350F;border-left:2px solid #92400E;font-weight:700;">寬</th>
+            <th style="width:50px;background:#FCD34D;color:#78350F;font-weight:700;">高</th>
+            <th style="width:50px;background:#FCD34D;color:#78350F;font-weight:700;">深</th>
+            <th style="width:60px;background:#FCD34D;color:#78350F;font-weight:700;">重</th>
           </tr>
         </thead>
         <tbody id="spec-tbody"></tbody>
@@ -1555,14 +1555,14 @@ function renderVendor(){
           <td class="name-cell" style="padding-left:20px;">${d.name}</td>
           <td>${expLabel}</td>
           <td class="v-spec-col" style="${specDisp}text-align:center;font-weight:600;color:#1A8597;">${sp.boxQty||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;">${sp.W||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;">${sp.H||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;">${sp.D||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;color:#0369A1;">${sp.WT||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;">${sp.bW||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;">${sp.bH||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;">${sp.bD||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;color:#92400E;">${sp.bWT||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#DBEAFE;">${sp.W||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#DBEAFE;">${sp.H||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#DBEAFE;">${sp.D||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#DBEAFE;color:#0369A1;">${sp.WT||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FEF3C7;">${sp.bW||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FEF3C7;">${sp.bH||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FEF3C7;">${sp.bD||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FEF3C7;color:#92400E;">${sp.bWT||'-'}</td>
         </tr>`;
       });
   const all = document.querySelectorAll('#v-tbody input.v-row-chk');
@@ -1906,14 +1906,14 @@ function renderSpec(){
     <td style="padding-left:20px;">${s.name}</td>
     <td style="text-align:center;">${s.volume||'-'}</td>
     <td style="text-align:center;font-weight:600;color:#1A8597;">${s.boxQty||'-'}</td>
-    <td style="text-align:right;background:#F0F9FF;border-left:2px solid #BAE6FD;">${s.W||'-'}</td>
-    <td style="text-align:right;background:#F0F9FF;">${s.H||'-'}</td>
-    <td style="text-align:right;background:#F0F9FF;">${s.D||'-'}</td>
-    <td style="text-align:right;background:#F0F9FF;color:#0369A1;">${s.WT||'-'}</td>
-    <td style="text-align:right;background:#FFFBEB;border-left:2px solid #FDE68A;">${s.bW||'-'}</td>
-    <td style="text-align:right;background:#FFFBEB;">${s.bH||'-'}</td>
-    <td style="text-align:right;background:#FFFBEB;">${s.bD||'-'}</td>
-    <td style="text-align:right;background:#FFFBEB;color:#92400E;">${s.bWT||'-'}</td>
+    <td style="text-align:right;background:#DBEAFE;border-left:2px solid #60A5FA;">${s.W||'-'}</td>
+    <td style="text-align:right;background:#DBEAFE;">${s.H||'-'}</td>
+    <td style="text-align:right;background:#DBEAFE;">${s.D||'-'}</td>
+    <td style="text-align:right;background:#DBEAFE;color:#0369A1;">${s.WT||'-'}</td>
+    <td style="text-align:right;background:#FEF3C7;border-left:2px solid #F59E0B;">${s.bW||'-'}</td>
+    <td style="text-align:right;background:#FEF3C7;">${s.bH||'-'}</td>
+    <td style="text-align:right;background:#FEF3C7;">${s.bD||'-'}</td>
+    <td style="text-align:right;background:#FEF3C7;color:#92400E;">${s.bWT||'-'}</td>
   </tr>`;});
   // sync header checkbox
   const all=document.querySelectorAll('#spec-tbody input.sp-row-chk');

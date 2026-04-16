@@ -1412,21 +1412,40 @@ function selectStoreCat(c){
 }
 function renderStore(){
   const q = document.getElementById('st-search').value.trim().toLowerCase();
-  let items = STORES_DATA.filter(d=>{
+  // 套用 大類 / 小類 階層篩選（來自 hierState.st）
+  const hs = (window.hierState && window.hierState.st) ? window.hierState.st : {big:'',small:''};
+  const scopedBase = STORES_DATA.filter(d=>{
     if(storeState.cat && d.category!==storeState.cat) return false;
-    if(storeState.store){
-      const has = d.stores.some(s=>s.loc===storeState.store && s.qty>0);
-      if(!has) return false;
-    }
+    if(hs.big && (d.big||d.category)!==hs.big) return false;
+    if(hs.small && (d.small||'')!==hs.small) return false;
     if(q) return d.name.toLowerCase().includes(q)||d.barcode.includes(q)||d.category.includes(q);
     return true;
   });
-  // stats
-  const countBy = (loc)=> STORES_DATA.filter(d=>d.stores.some(s=>s.loc===loc && s.qty>0)).length;
-  document.getElementById('st-total').textContent = STORES_DATA.length;
+  // 依 倉別再過濾：沒有該倉別庫存就不出現
+  let items = scopedBase.filter(d=>{
+    if(!storeState.store) return true;
+    return d.stores.some(s=>s.loc===storeState.store && s.qty>0);
+  });
+  // stats：依當前篩選動態更新
+  const countBy = (loc)=> scopedBase.filter(d=>d.stores.some(s=>s.loc===loc && s.qty>0)).length;
+  document.getElementById('st-total').textContent = scopedBase.length;
   STORE_LIST.forEach(s=>{
     const el = document.getElementById('st-stat-'+s.replace(/[^a-zA-Z0-9]/g,'_'));
-    if(el) el.textContent = countBy(s);
+    const n = countBy(s);
+    if(el) el.textContent = n;
+    // 倉別按鈕：計數為 0 時變灰（不可點，避免誤點）
+    const btn = document.querySelector('#st-storerow .cat-btn[data-store="'+s.replace(/"/g,'\\"')+'"]');
+    if(btn){
+      if(n===0){
+        btn.style.opacity='0.35';
+        btn.style.pointerEvents='none';
+        btn.title='目前此倉別無庫存';
+      } else {
+        btn.style.opacity='';
+        btn.style.pointerEvents='';
+        btn.title='';
+      }
+    }
   });
   document.getElementById('st-count').textContent = `顯示 ${items.length} 項商品`;
 
@@ -2483,6 +2502,14 @@ async function reqDoAction(){
     });
   }
 
+  function triggerRerender(px){
+    try {
+      if(px==='st' && typeof renderStore==='function') renderStore();
+      else if(px==='v' && typeof renderVendor==='function') renderVendor();
+      else if(px==='spec' && typeof renderSpec==='function') renderSpec();
+      else if((px==='m'||px==='s') && typeof render==='function') render(px);
+    } catch(e){}
+  }
   function selectBigH(px,bg){
     var st=hierState[px]; st.big=bg; st.small='';
     document.querySelectorAll('#'+px+'-bigrow2 .cat-btn').forEach(function(b){ b.classList.toggle('active',(b.dataset.big||'')===bg); });
@@ -2496,11 +2523,13 @@ async function reqDoAction(){
       var isAll=(b.dataset.cat||'')==='';
       b.style.display=(bg===''||isAll||b.dataset.big===bg)?'':'none';
     });
+    triggerRerender(px);
     applyHide(px);
   }
   function selectSmallH(px,sm){
     hierState[px].small=sm;
     document.querySelectorAll('#'+px+'-smallrow .cat-btn').forEach(function(b){ b.classList.toggle('active',(b.dataset.small||'')===sm); });
+    triggerRerender(px);
     applyHide(px);
   }
   window.selectBigH=selectBigH;

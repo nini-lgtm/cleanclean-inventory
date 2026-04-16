@@ -2660,5 +2660,32 @@ async function reqDoAction(){
 
 </script>
 
+<script>
+/* ===== Hub iframe 嵌入支援：?view=operations 自動進入營運部畫面（僅限 iframe 內） ===== */
+(function(){
+  try{
+    var params = new URLSearchParams(location.search);
+    var view = params.get('view');
+    if(view !== 'operations') return;
+    // 僅允許在 iframe 內（Hub 嵌入）時跳過密碼，直接網址訪問仍保留原本密碼保護
+    var inIframe = (window.self !== window.top);
+    if(!inIframe) return;
+    function go(tries){
+      tries = tries || 0;
+      if(typeof doEnterView === 'function'){
+        doEnterView('manager');
+      } else if(tries < 50){
+        setTimeout(function(){ go(tries + 1); }, 80);
+      }
+    }
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){go();}, 50); });
+    } else {
+      setTimeout(function(){go();}, 50);
+    }
+  } catch(e){ console.error('[hub-view] skipped:', e); }
+})();
+</script>
+
 </body>
 </html>

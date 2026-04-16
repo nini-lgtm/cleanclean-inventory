@@ -631,11 +631,11 @@ tbody tr.row-warn{background:#fffdf0;}
       <table>
         <thead><tr>
           <th style="width:36px;text-align:center;"><input type="checkbox" id="m-pickall" onclick="togglePickAll('m')" title="勾選全部"></th>
-          <th onclick="sortBy('m','category')">中類 <span class="sa">↕</span></th>
-          <th onclick="sortBy('m','barcode')">條碼 <span class="sa">↕</span></th>
-          <th onclick="sortBy('m','name')">商品名稱 <span class="sa">↕</span></th>
-          <th onclick="sortBy('m','stock')" style="text-align:right">總庫存 <span class="sa">↕</span></th>
-          <th>效期 × 數量（含倉別）</th>
+          <th style="width:96px;" onclick="sortBy('m','category')">中類 <span class="sa">↕</span></th>
+          <th style="width:130px;" onclick="sortBy('m','barcode')">條碼 <span class="sa">↕</span></th>
+          <th style="min-width:240px;" onclick="sortBy('m','name')">商品名稱 <span class="sa">↕</span></th>
+          <th style="width:90px;text-align:right" onclick="sortBy('m','stock')">總庫存 <span class="sa">↕</span></th>
+          <th style="min-width:360px;">效期 × 數量（含倉別）</th>
         </tr></thead>
         <tbody id="m-tbody"></tbody>
       </table>
@@ -724,11 +724,11 @@ tbody tr.row-warn{background:#fffdf0;}
       <table>
         <thead><tr>
           <th style="width:36px;text-align:center;"><input type="checkbox" id="s-pickall" onclick="togglePickAll('s')" title="勾選全部"></th>
-          <th onclick="sortBy('s','category')">中類 <span class="sa">↕</span></th>
-          <th onclick="sortBy('s','barcode')">條碼 <span class="sa">↕</span></th>
-          <th onclick="sortBy('s','name')">商品名稱 <span class="sa">↕</span></th>
-          <th onclick="sortBy('s','stock')" style="text-align:right">庫存數 <span class="sa">↕</span></th>
-          <th>最近效期</th>
+          <th style="width:96px;" onclick="sortBy('s','category')">中類 <span class="sa">↕</span></th>
+          <th style="width:130px;" onclick="sortBy('s','barcode')">條碼 <span class="sa">↕</span></th>
+          <th style="min-width:260px;" onclick="sortBy('s','name')">商品名稱 <span class="sa">↕</span></th>
+          <th style="width:90px;text-align:right" onclick="sortBy('s','stock')">庫存數 <span class="sa">↕</span></th>
+          <th style="width:200px;">最近效期</th>
         </tr></thead>
         <tbody id="s-tbody"></tbody>
       </table>
@@ -823,10 +823,14 @@ tbody tr.row-warn{background:#fffdf0;}
           <th>商品名稱</th>
           <th>最近效期</th>
           <th class="v-spec-col" style="display:none;">箱入數</th>
-          <th class="v-spec-col" style="display:none;">長(cm)</th>
-          <th class="v-spec-col" style="display:none;">寬(cm)</th>
-          <th class="v-spec-col" style="display:none;">高(cm)</th>
-          <th class="v-spec-col" style="display:none;">重量(g)</th>
+          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品寬</th>
+          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品高</th>
+          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品深</th>
+          <th class="v-spec-col" style="display:none;background:#E0F2FE;">單品重</th>
+          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱寬</th>
+          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱高</th>
+          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱深</th>
+          <th class="v-spec-col" style="display:none;background:#FEF3C7;">成箱重</th>
         </tr></thead>
         <tbody id="v-tbody"></tbody>
       </table>
@@ -859,11 +863,27 @@ tbody tr.row-warn{background:#fffdf0;}
   <div class="table-wrap">
     <div class="table-scroll">
       <table class="data-table">
-        <thead><tr>
-          <th style="text-align:center"><input type="checkbox" id="spec-checkall" onchange="toggleAllSpecSel(this.checked)"></th>
-          <th>條碼</th><th>品名</th><th>容量</th><th>箱入數</th>
-          <th>長(cm)</th><th>寬(cm)</th><th>高(cm)</th><th>重量(g)</th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th rowspan="2" style="width:36px;text-align:center;vertical-align:middle"><input type="checkbox" id="spec-checkall" onchange="toggleAllSpecSel(this.checked)"></th>
+            <th rowspan="2" style="width:130px;">條碼</th>
+            <th rowspan="2" style="min-width:200px;">品名</th>
+            <th rowspan="2" style="width:70px;">容量</th>
+            <th rowspan="2" style="width:70px;">箱入數</th>
+            <th colspan="4" style="background:#E0F2FE;color:#0369A1;border-left:2px solid #7DD3FC;">🧴 單品 (cm / g)</th>
+            <th colspan="4" style="background:#FEF3C7;color:#92400E;border-left:2px solid #FCD34D;">📦 成箱 (cm / g)</th>
+          </tr>
+          <tr>
+            <th style="width:50px;background:#E0F2FE;border-left:2px solid #7DD3FC;">寬</th>
+            <th style="width:50px;background:#E0F2FE;">高</th>
+            <th style="width:50px;background:#E0F2FE;">深</th>
+            <th style="width:60px;background:#E0F2FE;">重</th>
+            <th style="width:50px;background:#FEF3C7;border-left:2px solid #FCD34D;">寬</th>
+            <th style="width:50px;background:#FEF3C7;">高</th>
+            <th style="width:50px;background:#FEF3C7;">深</th>
+            <th style="width:60px;background:#FEF3C7;">重</th>
+          </tr>
+        </thead>
         <tbody id="spec-tbody"></tbody>
       </table>
     </div>
@@ -1142,36 +1162,34 @@ function nearestExpiry(batches, excludeLoc){
 function groupedRowsHtml(items, colspan, makeRow, opts){
   if(!items || !items.length) return '';
   opts = opts || {};
-  // 以 大→中→小 排序以利分組（若外部已排序則保持）
-  var sorted = items.slice().sort(function(a,b){
-    var A = (a.big||'')+'\u0001'+(a.mid||a.category||'')+'\u0001'+(a.small||'');
-    var B = (b.big||'')+'\u0001'+(b.mid||b.category||'')+'\u0001'+(b.small||'');
-    return A.localeCompare(B,'zh-TW');
-  });
-  var html = '';
-  var lastKey = null;
-  sorted.forEach(function(d){
+  // 保留傳入順序（Python pipeline 已依 大→中→小→名稱 排序好）
+  // 只做 stable grouping：把相同 (big,mid,small) 的連續排好
+  var groups = [];
+  var keyToIdx = {};
+  items.forEach(function(d){
     var big   = d.big || '';
     var mid   = d.mid || d.category || '';
     var small = d.small || '';
     var key   = big+'|'+mid+'|'+small;
-    if(key !== lastKey){
-      var label = small || mid || '其他';
-      var crumb = [big, mid].filter(Boolean).join(' › ');
-      var seriesItems = sorted.filter(function(x){
-        return ((x.big||'')+'|'+(x.mid||x.category||'')+'|'+(x.small||''))===key;
-      });
-      var cnt = seriesItems.length;
-      html += '<tr class="series-header" data-series-key="'+key.replace(/"/g,'&quot;')+'">'
-            + '<td colspan="'+colspan+'" style="background:linear-gradient(90deg,#EFF6FF,#F0F9FF);'
-            + 'border-left:4px solid #3B82F6;padding:8px 14px;">'
-            + '<span style="font-weight:700;color:#1E40AF;font-size:.95rem;">'+label+'</span>'
-            + (cnt>1?'<span style="margin-left:8px;font-size:.72rem;color:#64748B;">('+cnt+' 款)</span>':'')
-            + (crumb?'<span style="color:#64748B;font-size:.72rem;margin-left:12px;">'+crumb+'</span>':'')
-            + '</td></tr>';
-      lastKey = key;
+    if(!(key in keyToIdx)){
+      keyToIdx[key] = groups.length;
+      groups.push({key:key, big:big, mid:mid, small:small, items:[]});
     }
-    html += makeRow(d);
+    groups[keyToIdx[key]].items.push(d);
+  });
+  var html = '';
+  groups.forEach(function(g){
+    var label = g.small || g.mid || '其他';
+    var crumb = [g.big, g.mid].filter(Boolean).join(' › ');
+    var cnt = g.items.length;
+    html += '<tr class="series-header" data-series-key="'+g.key.replace(/"/g,'&quot;')+'">'
+          + '<td colspan="'+colspan+'" style="background:linear-gradient(90deg,#EFF6FF,#F0F9FF);'
+          + 'border-left:4px solid #3B82F6;padding:10px 14px;">'
+          + '<span style="font-weight:700;color:#1E40AF;font-size:1rem;">'+label+'</span>'
+          + (cnt>1?'<span style="margin-left:8px;font-size:.74rem;color:#64748B;font-weight:600;">('+cnt+' 款)</span>':'')
+          + (crumb?'<span style="color:#64748B;font-size:.72rem;margin-left:12px;">'+crumb+'</span>':'')
+          + '</td></tr>';
+    g.items.forEach(function(d){ html += makeRow(d); });
   });
   return html;
 }
@@ -1209,7 +1227,7 @@ function render(px){
                        : goodBatches.some(b=>batchCls(b.date)==='exp-warn')   ? 'row-warn' : '';
           const picked = state.m.picks.has(d.barcode);
           const pickStyle = picked ? 'background:#EFF6FF;' : '';
-          return `<tr class="${rowCls}" style="${pickStyle}">
+          return `<tr class="${rowCls}" data-barcode="${d.barcode}" style="${pickStyle}">
             <td style="text-align:center;"><input type="checkbox" ${picked?'checked':''} onclick="togglePick('m','${d.barcode}')"></td>
             <td><span class="cat-badge">${d.mid||d.category}</span></td>
             <td class="barcode-cell">${d.barcode}</td>
@@ -1279,7 +1297,7 @@ function render(px){
           const rowCls = ec==='urgent' ? 'row-urgent' : ec==='warn' ? 'row-warn' : '';
           const picked = state.s.picks.has(d.barcode);
           const pickStyle = picked ? 'background:#EFF6FF;' : '';
-          return `<tr class="${rowCls}" style="${pickStyle}">
+          return `<tr class="${rowCls}" data-barcode="${d.barcode}" style="${pickStyle}">
             <td style="text-align:center;"><input type="checkbox" ${picked?'checked':''} onclick="togglePick('s','${d.barcode}')"></td>
             <td><span class="cat-badge">${d.mid||d.category}</span></td>
             <td class="barcode-cell">${d.barcode}</td>
@@ -1422,7 +1440,7 @@ function renderStore(){
         const storeRows = shownStores.filter(s=>s.qty>0).map(s=>
           `<div class="batch-row"><span class="batch-loc" style="min-width:150px">${s.loc}</span><span class="batch-qty">× ${s.qty.toLocaleString()} 件</span></div>`
         ).join('');
-        return `<tr>
+        return `<tr data-barcode="${d.barcode}">
           <td><span class="cat-badge">${d.mid||d.category}</span></td>
           <td class="name-cell" style="padding-left:20px;">${d.name}</td>
           <td class="stock-cell"><span class="stock-num stock-ok">${shownTotal.toLocaleString()}</span></td>
@@ -1513,10 +1531,10 @@ function renderVendor(){
 
   const showSpec = vendorState.showSpec||false;
   const specDisp = showSpec ? '' : 'display:none;';
-  const colSpan = showSpec ? 10 : 5;
+  const colSpan = showSpec ? 14 : 5;
   document.getElementById('v-tbody').innerHTML = items.length===0
     ? `<tr><td colspan="${colSpan}" class="no-results">找不到符合條件的商品</td></tr>`
-    : items.map(d=>{
+    : groupedRowsHtml(items, colSpan, function(d){
         const near = nearestOmsExpiry(d.batches);
         const ec = near ? expClass(near.date) : 'none';
         const expLabel = near
@@ -1526,19 +1544,27 @@ function renderVendor(){
         const k = vendorKey(d);
         const checked = vendorSel.has(k) ? 'checked' : '';
         const sp = SPEC_DATA[d.barcode]||{};
-        return `<tr class="${rowCls}">
+        // 把分類資訊補上給 groupedRowsHtml 使用
+        d.big = d.big || sp.big || '';
+        d.mid = d.mid || sp.mid || d.category || '';
+        d.small = d.small || sp.small || '';
+        return `<tr class="${rowCls}" data-barcode="${d.barcode}">
           <td style="text-align:center"><input type="checkbox" class="v-row-chk" data-key="${k}" ${checked} onchange="toggleVendorSel('${k}', this.checked)"></td>
-          <td><span class="cat-badge">${d.category}</span></td>
+          <td><span class="cat-badge">${d.mid||d.category}</span></td>
           <td style="font-family:monospace;font-size:.78rem;color:#64748b">${d.barcode}</td>
-          <td class="name-cell">${d.name}</td>
+          <td class="name-cell" style="padding-left:20px;">${d.name}</td>
           <td>${expLabel}</td>
           <td class="v-spec-col" style="${specDisp}text-align:center;font-weight:600;color:#1A8597;">${sp.boxQty||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;">${sp.L||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;">${sp.W||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;">${sp.H||'-'}</td>
-          <td class="v-spec-col" style="${specDisp}text-align:right;">${sp.WT||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;">${sp.W||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;">${sp.H||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;">${sp.D||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#F0F9FF;color:#0369A1;">${sp.WT||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;">${sp.bW||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;">${sp.bH||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;">${sp.bD||'-'}</td>
+          <td class="v-spec-col" style="${specDisp}text-align:right;background:#FFFBEB;color:#92400E;">${sp.bWT||'-'}</td>
         </tr>`;
-      }).join('');
+      });
   const all = document.querySelectorAll('#v-tbody input.v-row-chk');
   const ca = document.getElementById('v-checkall');
   if(ca) ca.checked = all.length>0 && [...all].every(cb=>cb.checked);
@@ -1547,7 +1573,7 @@ function renderVendor(){
 /* ===== 匯出用常數 ===== */
 const LOGO_B64='data:image/png;base64,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';
 const VIEW_TITLES = {m:'營運部庫存', s:'庫存簡易版', store:'店面庫存', vendor:'廠商出貨效期', spec:'產品規格'};
-const SPEC_DATA={"4713233981256": {"barcode": "4713233981256", "name": "食器清潔皂500ml", "volume": "", "boxQty": "12入", "L": 8.5, "W": 8.5, "H": 20, "WT": 0, "bL": 28, "bW": 35.5, "bH": 22, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "食器清潔皂"}, "4713233981263": {"barcode": "4713233981263", "name": "食器清潔皂補充瓶500ml", "volume": "", "boxQty": "12入", "L": 8.5, "W": 8.5, "H": 14.5, "WT": 0, "bL": 28, "bW": 35.5, "bH": 17, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "食器清潔皂"}, "4713233981294": {"barcode": "4713233981294", "name": "【新版】速效除垢慕斯500ml", "volume": "", "boxQty": "18入", "L": 6, "W": 6, "H": 25.5, "WT": 0, "bL": 20.7, "bW": 38.7, "bH": 23.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "4713233981300": {"barcode": "4713233981300", "name": "除垢慕斯 500ML", "volume": "", "boxQty": "18入", "L": 6, "W": 6, "H": 21.5, "WT": 0, "bL": 23.7, "bW": 40, "bH": 27.8, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "4713233981317": {"barcode": "4713233981317", "name": "除垢慕斯 500ML 補充瓶", "volume": "", "boxQty": "18入", "L": 6, "W": 6, "H": 21.5, "WT": 0, "bL": 21, "bW": 38.2, "bH": 23, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "4713233981324": {"barcode": "4713233981324", "name": "濃縮家事皂700ml", "volume": "", "boxQty": "14入", "L": 7.8, "W": 8.2, "H": 24.5, "WT": 0, "bL": 23, "bW": 40, "bH": 27.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "濃縮家事皂"}, "4713233981355": {"barcode": "4713233981355", "name": "洗衣精800ml", "volume": "", "boxQty": "14入", "L": 7, "W": 7, "H": 28.5, "WT": 0, "bL": 23, "bW": 39, "bH": 30, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981362": {"barcode": "4713233981362", "name": "洗衣精補充瓶800ml", "volume": "", "boxQty": "14入", "L": 7, "W": 7, "H": 26.5, "WT": 0, "bL": 23, "bW": 39, "bH": 28, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981379": {"barcode": "4713233981379", "name": "洗衣精隨身瓶30ml", "volume": "", "boxQty": "180入", "L": 6.2, "W": 3.5, "H": 10.5, "WT": 0, "bL": 23, "bW": 39, "bH": 28, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981386": {"barcode": "4713233981386", "name": "淨淨-簡單柔濕巾(70抽)", "volume": "", "boxQty": 12, "L": 18, "W": 11, "H": 8, "WT": 0, "bL": 23, "bW": 39, "bH": 21.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981393": {"barcode": "4713233981393", "name": "淨淨-簡單柔濕巾(15抽)", "volume": "", "boxQty": 40, "L": 11, "W": 8.5, "H": 3.5, "WT": 0, "bL": 27, "bW": 35, "bH": 18.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981409": {"barcode": "4713233981409", "name": "淨淨-簡單柔濕巾(15抽×5包/串)", "volume": "", "boxQty": 8, "L": 12.5, "W": 9, "H": 29, "WT": 0, "bL": 27, "bW": 35, "bH": 18.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981409-1": {"barcode": "4713233981409-1", "name": "淨淨-簡單柔濕巾(15抽×5包/串)", "volume": "", "boxQty": 8, "L": 12.5, "W": 9, "H": 29, "WT": 0, "bL": 27, "bW": 35, "bH": 18.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981430": {"barcode": "4713233981430", "name": "真濃縮洗衣精10ml(隨身包)", "volume": "", "boxQty": "200入/袋", "L": 14, "W": 5.5, "H": 0.2, "WT": 0, "bL": 22, "bW": 26, "bH": 40, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981447": {"barcode": "4713233981447", "name": "【新版】真濃縮洗衣精-棉花香800ml", "volume": "", "boxQty": "14入", "L": 7, "W": 7, "H": 26.5, "WT": 0, "bL": 23, "bW": 39, "bH": 28, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981454": {"barcode": "4713233981454", "name": "淨淨-簡單柔濕巾(70抽×3包/串)", "volume": "", "boxQty": 4, "L": 18, "W": 11, "H": 31.5, "WT": 0, "bL": 23, "bW": 39, "bH": 21.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981454-1": {"barcode": "4713233981454-1", "name": "淨淨-簡單柔濕巾(70抽×3包/串)", "volume": "", "boxQty": 4, "L": 18, "W": 11, "H": 31.5, "WT": 0, "bL": 23, "bW": 39, "bH": 21.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981539": {"barcode": "4713233981539", "name": "除黴凝膠150ml", "volume": "", "boxQty": "80入", "L": 4, "W": 4, "H": 17, "WT": 0, "bL": 23.3, "bW": 36, "bH": 36, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除黴凝膠"}, "4713233981553": {"barcode": "4713233981553", "name": "剋菌液濃縮瓶500ml", "volume": "", "boxQty": "25入", "L": 6.5, "W": 6.5, "H": 19.5, "WT": 0, "bL": 36.5, "bW": 36.5, "bH": 22.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "剋菌液"}, "4713233981621": {"barcode": "4713233981621", "name": "剋菌液居家瓶300ml", "volume": "", "boxQty": "36入", "L": 5.5, "W": 5.5, "H": 25, "WT": 0, "bL": 34, "bW": 46.8, "bH": 30, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "剋菌液"}, "4713233982253": {"barcode": "4713233982253", "name": "食器清潔皂50ml", "volume": "", "boxQty": "140入", "L": 3.5, "W": 3.5, "H": 12.5, "WT": 0, "bL": 23.3, "bW": 40, "bH": 27.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "食器清潔皂"}, "4713233983823": {"barcode": "4713233983823", "name": "濃縮家事皂噴瓶300ml", "volume": "", "boxQty": "168入", "L": 6, "W": 6, "H": 18.5, "WT": 0, "bL": 52.5, "bW": 72.5, "bH": 41.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "專用小噴瓶"}, "4713233984509": {"barcode": "4713233984509", "name": "無泡護敏150ml", "volume": "", "boxQty": "72入", "L": 5, "W": 5, "H": 17.5, "WT": 0, "bL": 48.5, "bW": 48, "bH": 23, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "護敏 潔顏露"}, "4713233984516": {"barcode": "4713233984516", "name": "無泡護敏20ml", "volume": "", "boxQty": "150入", "L": 3.5, "W": 3.5, "H": 11.5, "WT": 0, "bL": 48.5, "bW": 49, "bH": 22, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "護敏 潔顏露"}, "4713233984523": {"barcode": "4713233984523", "name": "潔顏慕斯150ml", "volume": "", "boxQty": "48入", "L": 5, "W": 5, "H": 17.5, "WT": 0, "bL": 33, "bW": 42.5, "bH": 20, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏慕斯"}, "4713233984530": {"barcode": "4713233984530", "name": "潔顏慕斯30ml", "volume": "", "boxQty": "56入", "L": 4, "W": 4, "H": 12.5, "WT": 0, "bL": 39, "bW": 23, "bH": 30, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏慕斯"}, "4713233984547": {"barcode": "4713233984547", "name": "潔顏乳120ml", "volume": "", "boxQty": "35入", "L": 5.5, "W": 4.5, "H": 17, "WT": 0, "bL": 27, "bW": 38.5, "bH": 19.5, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏乳"}, "4713233984554": {"barcode": "4713233984554", "name": "潔顏乳20ml", "volume": "", "boxQty": "108入", "L": 3.5, "W": 3.5, "H": 11.5, "WT": 0, "bL": 33, "bW": 25, "bH": 22, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏乳"}, "4713233984561": {"barcode": "4713233984561", "name": "[升級版]牙膏薄荷(含氟)150g", "volume": "", "boxQty": "60入", "L": 4.5, "W": 3.5, "H": 19.5, "WT": 0, "bL": 31.5, "bW": 37.5, "bH": 23, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984578": {"barcode": "4713233984578", "name": "[升級版]牙膏薄荷(無氟)150g", "volume": "", "boxQty": "60入", "L": 4.5, "W": 3.5, "H": 19.5, "WT": 0, "bL": 31.5, "bW": 37.5, "bH": 23, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984585": {"barcode": "4713233984585", "name": "【升級版】兒童護齒牙膏-草莓口味75g", "volume": "", "boxQty": "90入", "L": 4.5, "W": 3.5, "H": 15, "WT": 0, "bL": 33.8, "bW": 43.5, "bH": 23, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984592": {"barcode": "4713233984592", "name": "【升級版】兒童護齒牙膏-無氟草莓75g", "volume": "", "boxQty": "90入", "L": 4.5, "W": 3.5, "H": 15, "WT": 0, "bL": 33.8, "bW": 43.5, "bH": 23, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984608": {"barcode": "4713233984608", "name": "【升級版】兒童護齒牙膏-葡萄口味75g", "volume": "", "boxQty": "90入", "L": 4.5, "W": 3.5, "H": 15, "WT": 0, "bL": 33.8, "bW": 43.5, "bH": 23, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984615": {"barcode": "4713233984615", "name": "【升級版】兒童護齒牙膏-無氟葡萄75g", "volume": "", "boxQty": "90入", "L": 4.5, "W": 3.5, "H": 15, "WT": 0, "bL": 33.8, "bW": 43.5, "bH": 23, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984622": {"barcode": "4713233984622", "name": "沐浴慕斯(無香)600ml", "volume": "", "boxQty": "12入", "L": 9, "W": 9, "H": 21.5, "WT": 0, "bL": 22, "bW": 60, "bH": 23.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984639": {"barcode": "4713233984639", "name": "沐浴慕斯(棉花)600ml", "volume": "", "boxQty": "12入", "L": 9, "W": 9, "H": 21.5, "WT": 0, "bL": 20.5, "bW": 57, "bH": 24, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984646": {"barcode": "4713233984646", "name": "沐浴慕斯(花香)600ml", "volume": "", "boxQty": "12入", "L": 9, "W": 9, "H": 21.5, "WT": 0, "bL": 22, "bW": 60, "bH": 23.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984653": {"barcode": "4713233984653", "name": "沐浴慕斯(棉花)50ml", "volume": "", "boxQty": "60入", "L": 3.5, "W": 3.5, "H": 12.5, "WT": 0, "bL": 39, "bW": 23, "bH": 30, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984660": {"barcode": "4713233984660", "name": "沐浴慕斯(花香)50ml", "volume": "", "boxQty": "60入", "L": 3.5, "W": 3.5, "H": 12.5, "WT": 0, "bL": 39, "bW": 23, "bH": 30, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984677": {"barcode": "4713233984677", "name": "沐浴露(棉花)500ml", "volume": "", "boxQty": "12入", "L": 7.5, "W": 7.5, "H": 19.5, "WT": 0, "bL": 25, "bW": 32, "bH": 22, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984684": {"barcode": "4713233984684", "name": "沐浴露(花香)500ml", "volume": "", "boxQty": "12入", "L": 7.5, "W": 7.5, "H": 19.5, "WT": 0, "bL": 25, "bW": 32, "bH": 22, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984691": {"barcode": "4713233984691", "name": "沐浴露(棉花)30ml", "volume": "", "boxQty": "52入", "L": 3.5, "W": 9.5, "H": 3.5, "WT": 0, "bL": 3.5, "bW": 28, "bH": 23, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984707": {"barcode": "4713233984707", "name": "沐浴露(花香)30ml", "volume": "", "boxQty": "40入", "L": 3.5, "W": 3.5, "H": 9.5, "WT": 0, "bL": 28.5, "bW": 37.5, "bH": 17, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984714": {"barcode": "4713233984714", "name": "【升級版】胺基酸多效牙膏-清涼薄荷20g", "volume": "", "boxQty": "160入", "L": 6.3, "W": 3.7, "H": 11.7, "WT": 0, "bL": 37, "bW": 31, "bH": 22, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984721": {"barcode": "4713233984721", "name": "【升級版】胺基酸多效牙膏-無氟薄荷20g", "volume": "", "boxQty": "160入", "L": 6.3, "W": 3.7, "H": 11.7, "WT": 0, "bL": 37, "bW": 31, "bH": 22, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984738": {"barcode": "4713233984738", "name": "復活草植潤水凝乳 300ml", "volume": "", "boxQty": "40入", "L": 6, "W": 6, "H": 18.3, "WT": 0, "bL": 35.5, "bW": 56, "bH": 30.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "植潤．水凝乳"}, "4713233984745": {"barcode": "4713233984745", "name": "植潤．水凝乳(隨身包)8mL", "volume": "", "boxQty": "200入/袋", "L": 14, "W": 6, "H": 0.2, "WT": 0, "bL": 48, "bW": 39, "bH": 20, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "植潤．水凝乳"}, "4713233984752": {"barcode": "4713233984752", "name": "胺基酸沐浴露 日光棉花(隨身包)8mL", "volume": "", "boxQty": "1500入", "L": 14, "W": 6.4, "H": 0.2, "WT": 0, "bL": 48, "bW": 39, "bH": 20, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984769": {"barcode": "4713233984769", "name": "胺基酸沐浴露 療癒花語(隨身包)8mL", "volume": "", "boxQty": "1500入", "L": 14, "W": 6.4, "H": 0.2, "WT": 0, "bL": 48, "bW": 39, "bH": 20, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233986664": {"barcode": "4713233986664", "name": "剋菌液100ml", "volume": "", "boxQty": "110入", "L": 3.5, "W": 3.5, "H": 17, "WT": 0, "bL": 40, "bW": 40, "bH": 20, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "剋菌液"}, "A4713233981409": {"barcode": "A4713233981409", "name": "勿用-柔濕巾15抽-單串/5包", "volume": "", "boxQty": 8, "L": 12.5, "W": 9, "H": 29, "WT": 0, "bL": 27, "bW": 35, "bH": 18.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "A4713233981454": {"barcode": "A4713233981454", "name": "勿用-柔濕巾70抽-單串/3包", "volume": "", "boxQty": 4, "L": 18, "W": 11, "H": 31.5, "WT": 0, "bL": 23, "bW": 39, "bH": 21.5, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "E10": {"barcode": "E10", "name": "除垢噴槍", "volume": "", "boxQty": 500, "L": 3.5, "W": 12, "H": 26.5, "WT": 0, "bL": 50, "bW": 32, "bH": 40, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "E13": {"barcode": "E13", "name": "洗衣精 壓頭", "volume": "", "boxQty": 500, "L": 6, "W": 4, "H": 28, "WT": 0, "bL": 38.5, "bW": 55, "bH": 39, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}};
+const SPEC_DATA={"4713233981256": {"barcode": "4713233981256", "name": "食器清潔皂500ml", "volume": "", "boxQty": "12入", "W": 8.5, "H": 20, "D": 8.5, "WT": 0, "bW": 35.5, "bH": 22, "bD": 28, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "食器清潔皂"}, "4713233981263": {"barcode": "4713233981263", "name": "食器清潔皂補充瓶500ml", "volume": "", "boxQty": "12入", "W": 8.5, "H": 14.5, "D": 8.5, "WT": 0, "bW": 35.5, "bH": 17, "bD": 28, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "食器清潔皂"}, "4713233981294": {"barcode": "4713233981294", "name": "【新版】速效除垢慕斯500ml", "volume": "", "boxQty": "18入", "W": 6, "H": 25.5, "D": 6, "WT": 0, "bW": 38.7, "bH": 23.5, "bD": 20.7, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "4713233981300": {"barcode": "4713233981300", "name": "除垢慕斯 500ML", "volume": "", "boxQty": "18入", "W": 6, "H": 21.5, "D": 6, "WT": 0, "bW": 40, "bH": 27.8, "bD": 23.7, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "4713233981317": {"barcode": "4713233981317", "name": "除垢慕斯 500ML 補充瓶", "volume": "", "boxQty": "18入", "W": 6, "H": 21.5, "D": 6, "WT": 0, "bW": 38.2, "bH": 23, "bD": 21, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "4713233981324": {"barcode": "4713233981324", "name": "濃縮家事皂700ml", "volume": "", "boxQty": "14入", "W": 8.2, "H": 24.5, "D": 7.8, "WT": 0, "bW": 40, "bH": 27.5, "bD": 23, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "濃縮家事皂"}, "4713233981355": {"barcode": "4713233981355", "name": "洗衣精800ml", "volume": "", "boxQty": "14入", "W": 7, "H": 28.5, "D": 7, "WT": 0, "bW": 39, "bH": 30, "bD": 23, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981362": {"barcode": "4713233981362", "name": "洗衣精補充瓶800ml", "volume": "", "boxQty": "14入", "W": 7, "H": 26.5, "D": 7, "WT": 0, "bW": 39, "bH": 28, "bD": 23, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981379": {"barcode": "4713233981379", "name": "洗衣精隨身瓶30ml", "volume": "", "boxQty": "180入", "W": 3.5, "H": 10.5, "D": 6.2, "WT": 0, "bW": 39, "bH": 28, "bD": 23, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981386": {"barcode": "4713233981386", "name": "淨淨-簡單柔濕巾(70抽)", "volume": "", "boxQty": 12, "W": 11, "H": 8, "D": 18, "WT": 0, "bW": 39, "bH": 21.5, "bD": 23, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981393": {"barcode": "4713233981393", "name": "淨淨-簡單柔濕巾(15抽)", "volume": "", "boxQty": 40, "W": 8.5, "H": 3.5, "D": 11, "WT": 0, "bW": 35, "bH": 18.5, "bD": 27, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981409": {"barcode": "4713233981409", "name": "淨淨-簡單柔濕巾(15抽×5包/串)", "volume": "", "boxQty": 8, "W": 9, "H": 29, "D": 12.5, "WT": 0, "bW": 35, "bH": 18.5, "bD": 27, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981409-1": {"barcode": "4713233981409-1", "name": "淨淨-簡單柔濕巾(15抽×5包/串)", "volume": "", "boxQty": 8, "W": 9, "H": 29, "D": 12.5, "WT": 0, "bW": 35, "bH": 18.5, "bD": 27, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981430": {"barcode": "4713233981430", "name": "真濃縮洗衣精10ml(隨身包)", "volume": "", "boxQty": "200入/袋", "W": 5.5, "H": 0.2, "D": 14, "WT": 0, "bW": 26, "bH": 40, "bD": 22, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981447": {"barcode": "4713233981447", "name": "【新版】真濃縮洗衣精-棉花香800ml", "volume": "", "boxQty": "14入", "W": 7, "H": 26.5, "D": 7, "WT": 0, "bW": 39, "bH": 28, "bD": 23, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}, "4713233981454": {"barcode": "4713233981454", "name": "淨淨-簡單柔濕巾(70抽×3包/串)", "volume": "", "boxQty": 4, "W": 11, "H": 31.5, "D": 18, "WT": 0, "bW": 39, "bH": 21.5, "bD": 23, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981454-1": {"barcode": "4713233981454-1", "name": "淨淨-簡單柔濕巾(70抽×3包/串)", "volume": "", "boxQty": 4, "W": 11, "H": 31.5, "D": 18, "WT": 0, "bW": 39, "bH": 21.5, "bD": 23, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "4713233981539": {"barcode": "4713233981539", "name": "除黴凝膠150ml", "volume": "", "boxQty": "80入", "W": 4, "H": 17, "D": 4, "WT": 0, "bW": 36, "bH": 36, "bD": 23.3, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除黴凝膠"}, "4713233981553": {"barcode": "4713233981553", "name": "剋菌液濃縮瓶500ml", "volume": "", "boxQty": "25入", "W": 6.5, "H": 19.5, "D": 6.5, "WT": 0, "bW": 36.5, "bH": 22.5, "bD": 36.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "剋菌液"}, "4713233981621": {"barcode": "4713233981621", "name": "剋菌液居家瓶300ml", "volume": "", "boxQty": "36入", "W": 5.5, "H": 25, "D": 5.5, "WT": 0, "bW": 46.8, "bH": 30, "bD": 34, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "剋菌液"}, "4713233982253": {"barcode": "4713233982253", "name": "食器清潔皂50ml", "volume": "", "boxQty": "140入", "W": 3.5, "H": 12.5, "D": 3.5, "WT": 0, "bW": 40, "bH": 27.5, "bD": 23.3, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "食器清潔皂"}, "4713233983823": {"barcode": "4713233983823", "name": "濃縮家事皂噴瓶300ml", "volume": "", "boxQty": "168入", "W": 6, "H": 18.5, "D": 6, "WT": 0, "bW": 72.5, "bH": 41.5, "bD": 52.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "專用小噴瓶"}, "4713233984509": {"barcode": "4713233984509", "name": "無泡護敏150ml", "volume": "", "boxQty": "72入", "W": 5, "H": 17.5, "D": 5, "WT": 0, "bW": 48, "bH": 23, "bD": 48.5, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "護敏 潔顏露"}, "4713233984516": {"barcode": "4713233984516", "name": "無泡護敏20ml", "volume": "", "boxQty": "150入", "W": 3.5, "H": 11.5, "D": 3.5, "WT": 0, "bW": 49, "bH": 22, "bD": 48.5, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "護敏 潔顏露"}, "4713233984523": {"barcode": "4713233984523", "name": "潔顏慕斯150ml", "volume": "", "boxQty": "48入", "W": 5, "H": 17.5, "D": 5, "WT": 0, "bW": 42.5, "bH": 20, "bD": 33, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏慕斯"}, "4713233984530": {"barcode": "4713233984530", "name": "潔顏慕斯30ml", "volume": "", "boxQty": "56入", "W": 4, "H": 12.5, "D": 4, "WT": 0, "bW": 23, "bH": 30, "bD": 39, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏慕斯"}, "4713233984547": {"barcode": "4713233984547", "name": "潔顏乳120ml", "volume": "", "boxQty": "35入", "W": 4.5, "H": 17, "D": 5.5, "WT": 0, "bW": 38.5, "bH": 19.5, "bD": 27, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏乳"}, "4713233984554": {"barcode": "4713233984554", "name": "潔顏乳20ml", "volume": "", "boxQty": "108入", "W": 3.5, "H": 11.5, "D": 3.5, "WT": 0, "bW": 25, "bH": 22, "bD": 33, "bWT": 0, "cat": "潔顏系列", "big": "淨淨", "mid": "潔顏系列", "small": "潔顏乳"}, "4713233984561": {"barcode": "4713233984561", "name": "[升級版]牙膏薄荷(含氟)150g", "volume": "", "boxQty": "60入", "W": 3.5, "H": 19.5, "D": 4.5, "WT": 0, "bW": 37.5, "bH": 23, "bD": 31.5, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984578": {"barcode": "4713233984578", "name": "[升級版]牙膏薄荷(無氟)150g", "volume": "", "boxQty": "60入", "W": 3.5, "H": 19.5, "D": 4.5, "WT": 0, "bW": 37.5, "bH": 23, "bD": 31.5, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984585": {"barcode": "4713233984585", "name": "【升級版】兒童護齒牙膏-草莓口味75g", "volume": "", "boxQty": "90入", "W": 3.5, "H": 15, "D": 4.5, "WT": 0, "bW": 43.5, "bH": 23, "bD": 33.8, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984592": {"barcode": "4713233984592", "name": "【升級版】兒童護齒牙膏-無氟草莓75g", "volume": "", "boxQty": "90入", "W": 3.5, "H": 15, "D": 4.5, "WT": 0, "bW": 43.5, "bH": 23, "bD": 33.8, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984608": {"barcode": "4713233984608", "name": "【升級版】兒童護齒牙膏-葡萄口味75g", "volume": "", "boxQty": "90入", "W": 3.5, "H": 15, "D": 4.5, "WT": 0, "bW": 43.5, "bH": 23, "bD": 33.8, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984615": {"barcode": "4713233984615", "name": "【升級版】兒童護齒牙膏-無氟葡萄75g", "volume": "", "boxQty": "90入", "W": 3.5, "H": 15, "D": 4.5, "WT": 0, "bW": 43.5, "bH": 23, "bD": 33.8, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】兒童護齒牙膏"}, "4713233984622": {"barcode": "4713233984622", "name": "沐浴慕斯(無香)600ml", "volume": "", "boxQty": "12入", "W": 9, "H": 21.5, "D": 9, "WT": 0, "bW": 60, "bH": 23.5, "bD": 22, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984639": {"barcode": "4713233984639", "name": "沐浴慕斯(棉花)600ml", "volume": "", "boxQty": "12入", "W": 9, "H": 21.5, "D": 9, "WT": 0, "bW": 57, "bH": 24, "bD": 20.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984646": {"barcode": "4713233984646", "name": "沐浴慕斯(花香)600ml", "volume": "", "boxQty": "12入", "W": 9, "H": 21.5, "D": 9, "WT": 0, "bW": 60, "bH": 23.5, "bD": 22, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984653": {"barcode": "4713233984653", "name": "沐浴慕斯(棉花)50ml", "volume": "", "boxQty": "60入", "W": 3.5, "H": 12.5, "D": 3.5, "WT": 0, "bW": 23, "bH": 30, "bD": 39, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984660": {"barcode": "4713233984660", "name": "沐浴慕斯(花香)50ml", "volume": "", "boxQty": "60入", "W": 3.5, "H": 12.5, "D": 3.5, "WT": 0, "bW": 23, "bH": 30, "bD": 39, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴慕斯"}, "4713233984677": {"barcode": "4713233984677", "name": "沐浴露(棉花)500ml", "volume": "", "boxQty": "12入", "W": 7.5, "H": 19.5, "D": 7.5, "WT": 0, "bW": 32, "bH": 22, "bD": 25, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984684": {"barcode": "4713233984684", "name": "沐浴露(花香)500ml", "volume": "", "boxQty": "12入", "W": 7.5, "H": 19.5, "D": 7.5, "WT": 0, "bW": 32, "bH": 22, "bD": 25, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984691": {"barcode": "4713233984691", "name": "沐浴露(棉花)30ml", "volume": "", "boxQty": "52入", "W": 9.5, "H": 3.5, "D": 3.5, "WT": 0, "bW": 28, "bH": 23, "bD": 3.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984707": {"barcode": "4713233984707", "name": "沐浴露(花香)30ml", "volume": "", "boxQty": "40入", "W": 3.5, "H": 9.5, "D": 3.5, "WT": 0, "bW": 37.5, "bH": 17, "bD": 28.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984714": {"barcode": "4713233984714", "name": "【升級版】胺基酸多效牙膏-清涼薄荷20g", "volume": "", "boxQty": "160入", "W": 3.7, "H": 11.7, "D": 6.3, "WT": 0, "bW": 31, "bH": 22, "bD": 37, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984721": {"barcode": "4713233984721", "name": "【升級版】胺基酸多效牙膏-無氟薄荷20g", "volume": "", "boxQty": "160入", "W": 3.7, "H": 11.7, "D": 6.3, "WT": 0, "bW": 31, "bH": 22, "bD": 37, "bWT": 0, "cat": "口腔呵護", "big": "淨淨", "mid": "口腔呵護", "small": "【升級版】胺基酸多效牙膏"}, "4713233984738": {"barcode": "4713233984738", "name": "復活草植潤水凝乳 300ml", "volume": "", "boxQty": "40入", "W": 6, "H": 18.3, "D": 6, "WT": 0, "bW": 56, "bH": 30.5, "bD": 35.5, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "植潤．水凝乳"}, "4713233984745": {"barcode": "4713233984745", "name": "植潤．水凝乳(隨身包)8mL", "volume": "", "boxQty": "200入/袋", "W": 6, "H": 0.2, "D": 14, "WT": 0, "bW": 39, "bH": 20, "bD": 48, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "植潤．水凝乳"}, "4713233984752": {"barcode": "4713233984752", "name": "胺基酸沐浴露 日光棉花(隨身包)8mL", "volume": "", "boxQty": "1500入", "W": 6.4, "H": 0.2, "D": 14, "WT": 0, "bW": 39, "bH": 20, "bD": 48, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233984769": {"barcode": "4713233984769", "name": "胺基酸沐浴露 療癒花語(隨身包)8mL", "volume": "", "boxQty": "1500入", "W": 6.4, "H": 0.2, "D": 14, "WT": 0, "bW": 39, "bH": 20, "bD": 48, "bWT": 0, "cat": "肌膚滋養", "big": "淨淨", "mid": "肌膚滋養", "small": "胺基酸沐浴露"}, "4713233986664": {"barcode": "4713233986664", "name": "剋菌液100ml", "volume": "", "boxQty": "110入", "W": 3.5, "H": 17, "D": 3.5, "WT": 0, "bW": 40, "bH": 20, "bD": 40, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "剋菌液"}, "A4713233981409": {"barcode": "A4713233981409", "name": "勿用-柔濕巾15抽-單串/5包", "volume": "", "boxQty": 8, "W": 9, "H": 29, "D": 12.5, "WT": 0, "bW": 35, "bH": 18.5, "bD": 27, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "A4713233981454": {"barcode": "A4713233981454", "name": "勿用-柔濕巾70抽-單串/3包", "volume": "", "boxQty": 4, "W": 11, "H": 31.5, "D": 18, "WT": 0, "bW": 39, "bH": 21.5, "bD": 23, "bWT": 0, "cat": "濕紙巾", "big": "淨淨", "mid": "濕紙巾", "small": "簡單柔濕巾"}, "E10": {"barcode": "E10", "name": "除垢噴槍", "volume": "", "boxQty": 500, "W": 12, "H": 26.5, "D": 3.5, "WT": 0, "bW": 32, "bH": 40, "bD": 50, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "除垢慕斯"}, "E13": {"barcode": "E13", "name": "洗衣精 壓頭", "volume": "", "boxQty": 500, "W": 4, "H": 28, "D": 6, "WT": 0, "bW": 55, "bH": 39, "bD": 38.5, "bWT": 0, "cat": "居家清潔", "big": "淨淨", "mid": "居家清潔", "small": "真濃縮洗衣精"}};
 function getExportData(viewType){
   let rows=[];
   if(viewType==='m'){
@@ -1871,20 +1897,24 @@ function renderSpec(){
   document.getElementById('spec-selcount').textContent=specSel.size;
   const tbody=document.getElementById('spec-tbody');
   tbody.innerHTML=items.length===0
-    ? '<tr><td colspan="9" class="no-results">找不到符合條件的商品</td></tr>'
-    : items.map(s=>{
+    ? '<tr><td colspan="13" class="no-results">找不到符合條件的商品</td></tr>'
+    : groupedRowsHtml(items, 13, function(s){
     const checked=specSel.has(s.barcode)?'checked':'';
-    return `<tr>
+    return `<tr data-barcode="${s.barcode}">
     <td style="text-align:center"><input type="checkbox" class="sp-row-chk" data-key="${s.barcode}" ${checked} onchange="toggleSpecSel('${s.barcode}',this.checked)"></td>
     <td style="font-family:monospace;color:#64748B;">${s.barcode}</td>
-    <td>${s.name}</td>
-    <td style="text-align:center;">${s.volume}</td>
-    <td style="text-align:center;font-weight:600;color:#1A8597;">${s.boxQty}</td>
-    <td style="text-align:right;">${s.L||'-'}</td>
-    <td style="text-align:right;">${s.W||'-'}</td>
-    <td style="text-align:right;">${s.H||'-'}</td>
-    <td style="text-align:right;">${s.WT||'-'}</td>
-  </tr>`;}).join('');
+    <td style="padding-left:20px;">${s.name}</td>
+    <td style="text-align:center;">${s.volume||'-'}</td>
+    <td style="text-align:center;font-weight:600;color:#1A8597;">${s.boxQty||'-'}</td>
+    <td style="text-align:right;background:#F0F9FF;border-left:2px solid #BAE6FD;">${s.W||'-'}</td>
+    <td style="text-align:right;background:#F0F9FF;">${s.H||'-'}</td>
+    <td style="text-align:right;background:#F0F9FF;">${s.D||'-'}</td>
+    <td style="text-align:right;background:#F0F9FF;color:#0369A1;">${s.WT||'-'}</td>
+    <td style="text-align:right;background:#FFFBEB;border-left:2px solid #FDE68A;">${s.bW||'-'}</td>
+    <td style="text-align:right;background:#FFFBEB;">${s.bH||'-'}</td>
+    <td style="text-align:right;background:#FFFBEB;">${s.bD||'-'}</td>
+    <td style="text-align:right;background:#FFFBEB;color:#92400E;">${s.bWT||'-'}</td>
+  </tr>`;});
   // sync header checkbox
   const all=document.querySelectorAll('#spec-tbody input.sp-row-chk');
   const ca=document.getElementById('spec-checkall');
@@ -2420,20 +2450,37 @@ async function reqDoAction(){
     var tbodyId = (px==='m')?'m-tbody':(px==='s')?'s-tbody':(px==='st')?'st-tbody':(px==='v')?'v-tbody':'spec-tbody';
     var tb=document.getElementById(tbodyId); if(!tb) return;
     var rows=tb.querySelectorAll('tr');
+    // 先決定每一列顯示與否；最後再處理 series-header（若整組子列被隱藏則一併隱藏）
+    var groupCounts={}; // key -> {total, visible}
+    var headerRefs=[];
     for(var i=0;i<rows.length;i++){
       var tr=rows[i];
-      // 嘗試找 barcode：checkbox dataset.key 或 dataset.barcode
-      var key='';
-      var cb=tr.querySelector('input[data-key]');
-      if(cb) key=(cb.dataset.key||'').split('|')[0];
-      if(!key){ var tdMono=tr.querySelector('td'); } // fallback nothing
+      if(tr.classList.contains('series-header')){
+        headerRefs.push(tr);
+        continue;
+      }
+      var key=tr.getAttribute('data-barcode')||'';
+      if(!key){
+        var cb=tr.querySelector('input[data-key]');
+        if(cb) key=(cb.dataset.key||'').split('|')[0];
+      }
       var d=key?idx[key]:null;
       if(!d){ tr.style.display=''; continue; }
       var show=true;
       if(st.big && bigOf(d)!==st.big) show=false;
       if(st.small && smallOf(d)!==st.small) show=false;
       tr.style.display = show?'':'none';
+      var gkey=(d.big||'')+'|'+(d.mid||d.category||'')+'|'+(d.small||'');
+      if(!groupCounts[gkey]) groupCounts[gkey]={total:0, visible:0};
+      groupCounts[gkey].total++;
+      if(show) groupCounts[gkey].visible++;
     }
+    // series-header 依 data-series-key 決定顯示
+    headerRefs.forEach(function(h){
+      var k=h.getAttribute('data-series-key')||'';
+      var g=groupCounts[k];
+      h.style.display = (g && g.visible>0) ? '' : 'none';
+    });
   }
 
   function selectBigH(px,bg){

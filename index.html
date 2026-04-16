@@ -2538,9 +2538,16 @@ async function reqDoAction(){
   function injectRows(px){
     var cat=document.getElementById(px+'-catrow');
     if(!cat || document.getElementById(px+'-bigrow2')) return;
-    // label rename
+    // label rename（若沒有則補一個）
     var lbl=cat.querySelector('.filter-label');
-    if(lbl) lbl.textContent='中類：';
+    if(lbl) {
+      lbl.textContent='中類：';
+    } else {
+      lbl=document.createElement('span');
+      lbl.className='filter-label';
+      lbl.textContent='中類：';
+      cat.insertBefore(lbl, cat.firstChild);
+    }
     // 大類 row
     var bigRow=document.createElement('div');
     bigRow.className='filter-row'; bigRow.id=px+'-bigrow2';
